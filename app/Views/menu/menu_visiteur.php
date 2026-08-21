@@ -9,8 +9,6 @@
 
   <!-- ═══ MENU NAVIGATION PAGES ════════════════════════════════ -->
   <nav class="nav-main">
-    <a href="<?= base_url('index.php/message/faire_suivre') ?>" class="nav-item">Suivre une demande</a>
-    <a href="<?= base_url('index.php/message/creer') ?>" class="nav-item">Nous contacter</a>
     <a href="<?= base_url('index.php/compte/creer') ?>" class="nav-item">Nous rejoindre</a>
     <a href="<?= base_url('index.php/compte/connecter') ?>" class="nav-item">Se connecter</a>
   </nav>

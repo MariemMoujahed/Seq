@@ -33,9 +33,9 @@
             </a>
         </li>
         <li class="nav-item mx-2">
-            <a class="nav-link text-white" href="<?= base_url('index.php/message/afficher') ?>">
-                <i class="fas fa-fw fa-envelope me-1" aria-hidden="true"></i>
-                Contact
+            <a class="nav-link text-white" href="<?= base_url('index.php/produits/lister_prd') ?>">
+                <i class="fas fa-fw fa-box me-1" aria-hidden="true"></i>
+                Gestion des produits
             </a>
         </li>
 

@@ -83,74 +83,118 @@ textarea::placeholder {
 <?php if (empty($dev)) : ?>
     <p>Aucun devis trouvé.</p>
 <?php else : ?>
-  <table>
-    <thead>
-      <tr>
-        <th>le nom de site</th>
-        <th>description</th>
-        <th>Montant estimé</th>
-        <th>Durée estimée</th>
-        <th>Statut</th>
-        <th>Date création</th>
-        <th>Date validation</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach ($dev as $d) : ?>
-      <tr>
-        <td><?= esc($d['det_nom']) ?></td>
-        <td><?= esc($d['det_description']) ?></td>
-        <td class="amount">
-            <?php if ($d['dev_statut'] == 'V') : ?>
-                <?= esc($d['dev_montant_estime']) ?> €
-            <?php else : ?>
-                <span class="badge badge-pending">En cours d'évaluation</span>
-            <?php endif; ?>
-        </td>
-        <td><?= esc($d['dev_duree_estime']) ?> jours</td>
-        <td>
-          <?php if ($d['dev_statut'] == 'P') : ?>
-            <span class="badge badge-pending">⏳ En attente</span>
-          <?php else : ?>
-            <span class="badge badge-valid">✔ Validé</span>
-          <?php endif; ?>
-        </td>
-        <td><?= esc($d['dev_date_creation']) ?></td>
-        <td><?= $d['dev_date_validation'] ? esc($d['dev_date_validation']) : '—' ?></td>
-        <td>
-            <a href="<?= base_url('/devis/supprimer/' . $d['dev_id']) ?>" 
-            onclick="return confirm('Tu es sûr de vouloir supprimer ce devis ?');"
-            class="btn-delete">
-                Supprimer
-            </a>
-        </td>
-      </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
+    <table>
+        <thead>
+            <tr>
+                <th>Client</th>
+                <th>Produits</th>
+                <th>Distance</th>
+                <th>Main d'œuvre</th>
+                <th>Total HT</th>
+                <th>TVA</th>
+                <th>Total TTC</th>
+                <th>État</th>
+                <th>Date création</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($dev as $d) : ?>
+                <tr>
+                    <td><?= esc($d['cli_nom'] ?? '—') ?></td>
+                    <td><?= esc($d['produits'] ?? '—') ?></td>
+                    <td><?= $d['dev_distance'] !== null ? esc($d['dev_distance']) . ' km' : '—' ?></td>
+                    <td><?= esc($d['dev_main_oeuvre']) ?> €</td>
+                    <td><?= esc($d['dev_total_ht']) ?> €</td>
+                    <td><?= esc($d['dev_tva']) ?> €</td>
+                    <td class="amount"><strong><?= esc($d['dev_total_ttc']) ?> €</strong></td>
+                    <td>
+                        <?php if ($d['dev_etat'] == 'P') : ?>
+                            <span class="badge badge-pending">⏳ En attente</span>
+                        <?php else : ?>
+                            <span class="badge badge-valid">✔ Validé</span>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= esc($d['dev_date_creation']) ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
 <?php endif; ?>
 
 <hr>
 
 <h3>Créer un devis</h3>
+<form method="post" action="<?= base_url('devis/creer') ?>" id="form-devis">
 
-<form method="post" action="<?= base_url('devis/creer') ?>">
-    <label>Nom de site :</label>
-    <input type="text" name="det_nom" placeholder="Nom du site">
-    <label>Description :</label>
-    <textarea name="det_description" placeholder="Description"></textarea>
-    <label>Nombre de pages :</label>
-    <input type="number" name="nb_pages" required>
-    <br><br>
-
-    <label>Paiement en ligne :</label>
-    <select name="paiement_ligne">
-        <option value="oui">Oui</option>
-        <option value="non">Non</option>
+    <label>Client :</label>
+    <select name="cli_id" id="cli_id">
+        <option value="">-- Nouveau client --</option>
+        <?php foreach ($clients as $c) : ?>
+            <option value="<?= esc($c['cli_id']) ?>"><?= esc($c['cli_nom']) ?> (<?= esc($c['cli_telephone']) ?>)</option>
+        <?php endforeach; ?>
     </select>
+
+    <div id="nouveau-client">
+        <label>Nom du client :</label>
+        <input type="text" name="cli_nom" placeholder="Nom / société">
+
+        <label>Téléphone :</label>
+        <input type="text" name="cli_telephone" placeholder="Téléphone">
+
+        <label>Email :</label>
+        <input type="email" name="cli_email" placeholder="Email">
+
+        <label>Adresse :</label>
+        <input type="text" name="cli_adresse" placeholder="Adresse">
+
+        <label>Région :</label>
+        <input type="text" name="cli_region" placeholder="Région">
+    </div>
+
+    <br><br>
+    <label>Distance (km) :</label>
+    <input type="number" step="0.01" name="dev_distance">
+
+    <label>Main d'œuvre (€) :</label>
+    <input type="number" step="0.01" name="dev_main_oeuvre" value="0">
+
+    <hr>
+    <h4>Produits</h4>
+    <div id="lignes-produits">
+        <div class="ligne-produit">
+            <select name="prd_id[]">
+                <option value="">-- Choisir un produit --</option>
+                <?php foreach ($produits as $p) : ?>
+                    <option value="<?= esc($p['prd_id']) ?>">
+                        <?= esc($p['prd_nom']) ?> — <?= esc($p['prd_marque']) ?> (<?= esc($p['prd_prix']) ?> €)
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <input type="number" name="det_quantite[]" min="1" value="1" style="width:70px">
+        </div>
+    </div>
+    <button type="button" id="ajouter-ligne">+ Ajouter un produit</button>
+
     <br><br>
     <button class="btn-submit" type="submit">Créer le devis</button>
 </form>
 
-<hr>
-<?= view("chatbot_widget") ?>
+<script>
+document.getElementById('ajouter-ligne').addEventListener('click', function () {
+    const conteneur = document.getElementById('lignes-produits');
+    const ligne = conteneur.querySelector('.ligne-produit').cloneNode(true);
+    ligne.querySelectorAll('select, input').forEach(el => {
+        if (el.tagName === 'SELECT') el.selectedIndex = 0;
+        if (el.tagName === 'INPUT') el.value = 1;
+    });
+    conteneur.appendChild(ligne);
+});
+
+const selectClient = document.getElementById('cli_id');
+const blocNouveauClient = document.getElementById('nouveau-client');
+function toggleNouveauClient() {
+    blocNouveauClient.style.display = selectClient.value ? 'none' : 'block';
+}
+selectClient.addEventListener('change', toggleNouveauClient);
+toggleNouveauClient();
+</script>

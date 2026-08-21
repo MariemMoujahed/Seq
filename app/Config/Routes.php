@@ -13,6 +13,7 @@ use App\Controllers\Compte;
 use App\Controllers\Message;
 use App\Controllers\Devis;
 use App\Controllers\Chat;
+use App\Controllers\Produits;
 
 $routes->get('/', [Accueil::class, 'afficher']);
 
@@ -40,8 +41,18 @@ $routes->post('message/repondre/(:num)', [Message::class, 'repondre']);
 
 // devis
 $routes->get('devis/lister_dev', [Devis::class, 'lister_dev']);
+
 $routes->post('devis/creer', [Devis::class, 'creer']);
-$routes->get('devis/valider/(:num)', [Devis::class, 'valider']);
-$routes->post('devis/modifier_tarif',      'Devis::modifier_tarif');
-$routes->post('devis/modifier_montant/(:num)', 'Devis::modifier_montant/$1');
-$routes->get('devis/supprimer/(:num)', 'Devis::supprimer/$1');
+
+$routes->get('devis/valider/(:num)', [Devis::class, 'valider/$1']);
+
+$routes->post('devis/modifier_main_oeuvre/(:num)', [Devis::class, 'modifier_main_oeuvre/$1']);
+
+$routes->get('devis/supprimer/(:num)', [Devis::class, 'supprimer/$1']);
+
+
+// produits (admin uniquement)
+$routes->get('produits/lister_prd', [Produits::class, 'lister_prd']);
+$routes->post('produits/ajouter', [Produits::class, 'ajouter']);
+$routes->post('produits/modifier/(:num)', [Produits::class, 'modifier/$1']);
+$routes->get('produits/supprimer/(:num)', [Produits::class, 'supprimer/$1']);

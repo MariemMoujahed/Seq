@@ -57,15 +57,22 @@ class Db_model extends Model
         return $query->getRow();
     }
 
-    public function set_compte($saisie)
+    function set_compte($saisie)
     {
+        $db = \Config\Database::connect();
+
+        $pseudo = $saisie['pseudo'];
+        $mdp    = $saisie['mdp'];
+
         $salt = "OnRajouteDuSelPourAllongerleMDP123!!45678__Test";
-        $data = [
-            'cpt_pseudo' => $saisie['pseudo'],
-            'cpt_mdp' => hash('sha256', $salt . $saisie['mdp']),
-            'cpt_statut' => 'A'
-        ];
-        return $this->db->table('t_compte_cpt')->insert($data);
+
+        $mdp_hash = hash('sha256', $salt . $mdp);
+
+        $sql = "INSERT INTO t_compte_cpt 
+                (cpt_pseudo, cpt_mdp, cpt_statut) 
+                VALUES ('$pseudo', '$mdp_hash', 'A')";
+
+        return $db->query($sql);
     }
 
     public function set_profil($saisie)
@@ -145,29 +152,11 @@ class Db_model extends Model
         return $query->getRowArray();
     }
     
-    public function get_role_by_pseudo($pseudo)
-    {
-        $sql = "SELECT *
-                FROM t_profil_pfl 
-                JOIN t_compte_cpt USING (cpt_pseudo)
-                WHERE cpt_pseudo = '".$pseudo."'";
-        $query = $this->db->query($sql);
-        return $query->getRowArray();
-    }
-    public function get_profil_by_pseudo($pseudo)
-    {
-        $sql = "SELECT *
-                FROM t_compte_cpt 
-                LEFT JOIN t_profil_pfl USING (cpt_pseudo)
-                WHERE cpt_pseudo = '".$pseudo."'";
-
-        $query = $this->db->query($sql);
-        return $query->getRowArray();
-    }
-
+    
     public function get_all_profil()
     {
-        $resultat = $this->db->query("SELECT * FROM t_profil_pfl JOIN t_compte_cpt USING (cpt_pseudo);");
+        $resultat = $this->db->query("SELECT * FROM t_profil_pfl 
+                                    JOIN t_compte_cpt USING (cpt_pseudo);");
         return $resultat->getResultArray();
     }
 
@@ -204,26 +193,6 @@ class Db_model extends Model
         return $resultat_message->getResultArray();
     }
 
-    public function get_all_dev()
-    {
-        $sql = "SELECT * FROM t_devis_dev      
-                JOIN t_detail_det USING (dev_id)
-                JOIN t_compte_cpt USING (cpt_pseudo)";
-        return $this->db->query($sql)->getResultArray();
-    }
-
-    public function get_dev_by_user($pseudo)
-    {
-        $pseudo = addslashes($pseudo);
-
-        $sql = "SELECT * 
-                FROM t_devis_dev
-                JOIN t_detail_det USING (dev_id)
-                JOIN t_compte_cpt USING (cpt_pseudo)
-                WHERE cpt_pseudo = '".$pseudo."'";
-
-        return $this->db->query($sql)->getResultArray();
-    }
 
     public function get_parametre($cle)
     {
@@ -276,6 +245,110 @@ class Db_model extends Model
                 WHERE cpt_pseudo = '".$pseudo."'";
         return $this->db->query($sql);
     }
+public function get_role_by_pseudo(string $pseudo): ?array
+    {
+        $db = \Config\Database::connect();
+        return $db->table('t_profil_pfl')
+            ->where('cpt_pseudo', $pseudo)
+            ->get()
+            ->getRowArray();
+    }
+ 
+    // ---------------------------------------------------------
+    // CLIENTS
+    // ---------------------------------------------------------
+ 
+    public function get_clients(): array
+    {
+        $db = \Config\Database::connect();
+        return $db->table('t_client_cli')
+            ->orderBy('cli_nom', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
+ 
+    // ---------------------------------------------------------
+    // PRODUITS
+    // ---------------------------------------------------------
+ 
+    public function get_produits(): array
+    {
+        $db = \Config\Database::connect();
+        return $db->table('t_produit_prd')
+            ->orderBy('prd_categorie', 'ASC')
+            ->orderBy('prd_nom', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
+ 
+    // ---------------------------------------------------------
+    // DEVIS
+    // ---------------------------------------------------------
+ 
+    /**
+     * Tous les devis, avec infos client + liste des produits agrégée
+     * (vue Administrateur / Commercial)
+     */
+    public function get_all_dev(): array
+    {
+        $db = \Config\Database::connect();
+        $builder = $db->table('t_devis_dev dv');
+        $builder->select(
+            "dv.*, cl.cli_nom, cl.cli_telephone, cl.cli_email, cl.cli_region,
+             GROUP_CONCAT(CONCAT(p.prd_nom, ' x', d.det_quantite) SEPARATOR ', ') AS produits"
+        );
+        $builder->join('t_client_cli cl', 'cl.cli_id = dv.cli_id', 'left');
+        $builder->join('t_detail_det d', 'd.dev_id = dv.dev_id', 'left');
+        $builder->join('t_produit_prd p', 'p.prd_id = d.prd_id', 'left');
+        $builder->groupBy('dv.dev_id');
+        $builder->orderBy('dv.dev_date_creation', 'DESC');
+ 
+        return $builder->get()->getResultArray();
+    }
+ 
+    /**
+     * Devis créés par un utilisateur donné (vue Commercial / Technicien)
+     */
+    public function get_dev_by_user(string $pseudo): array
+    {
+        $db = \Config\Database::connect();
+        $builder = $db->table('t_devis_dev dv');
+        $builder->select(
+            "dv.*, cl.cli_nom, cl.cli_telephone, cl.cli_email, cl.cli_region,
+             GROUP_CONCAT(CONCAT(p.prd_nom, ' x', d.det_quantite) SEPARATOR ', ') AS produits"
+        );
+        $builder->join('t_client_cli cl', 'cl.cli_id = dv.cli_id', 'left');
+        $builder->join('t_detail_det d', 'd.dev_id = dv.dev_id', 'left');
+        $builder->join('t_produit_prd p', 'p.prd_id = d.prd_id', 'left');
+        $builder->where('dv.cpt_pseudo', $pseudo);
+        $builder->groupBy('dv.dev_id');
+        $builder->orderBy('dv.dev_date_creation', 'DESC');
+ 
+        return $builder->get()->getResultArray();
+    }
+ 
+    /**
+     * Somme des lignes de détail (produits) d'un devis, hors main d'œuvre
+     */
+    public function get_total_produits(int $dev_id): float
+    {
+        $db = \Config\Database::connect();
+        $row = $db->table('t_detail_det')
+            ->selectSum('det_prix')
+            ->where('dev_id', $dev_id)
+            ->get()
+            ->getRowArray();
+ 
+        return (float) ($row['det_prix'] ?? 0);
+    }
+    public function get_profil_by_pseudo($pseudo)
+{
+    return $this->db->table('t_profil_pfl')
+        ->where('cpt_pseudo', $pseudo)
+        ->get()
+        ->getRowArray();
+}
 
 
 }
+    
