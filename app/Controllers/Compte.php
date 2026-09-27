@@ -48,7 +48,7 @@ class Compte extends BaseController
         
             $role = $model->get_role_by_pseudo($pseudo);
 
-            if ($role && $role['pfl_role'] === 'A') {
+            if ($role && $role['cpt_role'] === 'A') {
                 $menu = 'menu_administrateur';
             } else {
                 $menu = 'menu_membre';
@@ -64,54 +64,73 @@ class Compte extends BaseController
     public function creer()
     {
         // L’utilisateur a validé le formulaire en cliquant sur le bouton
-        if ($this->request->getMethod()=="POST")
-        {
+        if ($this->request->getMethod() == 'POST') {
             if (! $this->validate([
-                'pseudo' => 'required|max_length[255]|min_length[2]',
-                'mdp' => 'required|max_length[255]|min_length[8]',
-                'nom' => 'required|max_length[60]',
-                'prenom' => 'required|max_length[45]',
-                'adresse' => 'required|max_length[100]',
-                'telephone' => 'required|max_length[20]',
-            ])) 
-            {
-                // La validation du formulaire a échoué, retour au formulaire !
-                return view('templates/haut', ['titre' => 'Créer un compte'])
-                . view('compte/compte_creer')
-                . view('templates/bas');
+                // Le pseudo est la clé primaire : le motif couvre aussi la
+                // longueur. max_length[60] correspond à la colonne réelle
+                // (l'ancien max_length[255] laissait passer des pseudos qui
+                // faisaient échouer l'insertion).
+                'pseudo'     => 'required|trim|regex_match[/^[A-Za-z0-9._-]{2,60}$/]',
+                'mdp'        => 'required|min_length[8]|max_length[255]',
+                'nom'        => 'required|trim|max_length[60]',
+                'prenom'     => 'required|trim|max_length[45]',
+                'adresse'    => 'required|trim|max_length[100]',
+                'telephone'  => 'required|trim|max_length[20]',
+                'email'      => 'permit_empty|trim|valid_email|max_length[100]',
+                'entreprise' => 'permit_empty|trim|max_length[100]',
+            ], [
+                // CI4 attend un tableau imbriqué ['champ' => ['règle' => 'message']] ;
+                // la forme plate 'champ.règle' est ignorée silencieusement et
+                // affiche le message anglais par défaut.
+                'pseudo' => [
+                    'regex_match' => 'Le pseudo doit faire 2 à 60 caractères : lettres, chiffres, point, tiret ou underscore.',
+                ],
+                'mdp' => [
+                    'min_length' => 'Le mot de passe doit contenir au moins 8 caractères.',
+                ],
+                'email' => [
+                    'valid_email' => 'L’adresse email est invalide.',
+                ],
+            ])) {
+                // La validation a échoué : on revient au formulaire en
+                // conservant la saisie, via withInput() + with('error').
+                return redirect()->to('/compte/creer')
+                    ->with('error', 'Le formulaire contient des erreurs. Vérifiez les champs signalés.')
+                    ->withInput();
             }
-        // La validation du formulaire a réussi, traitement du formulaire
-        $model = model(Db_model::class);
-        $recuperation = $this->validator->getValidated();
-        $model->set_compte($recuperation);
-        $data['le_compte']=$recuperation['pseudo'];
-        $data['le_message']="Nouveau nombre de comptes : ";
-         $fichier=$this->request->getFile('fichier');
 
-        // 2. Création du profil
-        $model->set_profil($recuperation);
+            $model       = model(Db_model::class);
+            $recuperation = $this->validator->getValidated();
 
-        if(!empty($fichier)){
-        // Récupération du nom du fichier téléversé
-            $nom_fichier=$fichier->getName();
-        // Dépôt du fichier dans le répertoire ci/public/images
-        if($fichier->move("images",$nom_fichier)){
-        // + Mettre ici l’appel de la fonction membre du Db_model
-        // + L’affichage de la page indiquant l’ajout du compte !
+            // Le pseudo est la clé primaire : sans ce contrôle, une
+            // inscription avec un pseudo déjà pris renvoyait une erreur
+            // MySQL brute (HTTP 500) au lieu d'un message lisible.
+            if ($model->pseudo_existe($recuperation['pseudo'])) {
+                return redirect()->to('/compte/creer')
+                    ->with('error', 'Ce pseudo est déjà utilisé. Choisissez-en un autre.')
+                    ->withInput();
+            }
+
+            if (! $model->creer_compte($recuperation)) {
+                return redirect()->to('/compte/creer')
+                    ->with('error', 'La création du compte a échoué. Réessayez.')
+                    ->withInput();
+            }
+
+            $data['le_compte']  = $recuperation['pseudo'];
+            $data['le_message'] = 'Nouveau nombre de comptes : ';
+            $data['le_total']   = $model->get_membre();
+
+            return view('templates/haut', $data)
+                . view('compte/compte_succes')
+                . view('templates/bas');
         }
-        }
-        //Appel de la fonction créée dans le précédent tutoriel :
-        $data['le_total']=$model->get_membre();
-        return view('menu/menu_visiteur')
-        . view('templates/haut', $data)
-        . view('compte/compte_succes')
-        . view('templates/bas');
-        }
+
         // L’utilisateur veut afficher le formulaire pour créer un compte
-            return view('templates/haut', ['titre' => 'Créer un compte'])
-            . view('compte/compte_creer',)
+        return view('templates/haut', ['titre' => 'Créer un compte'])
+            . view('compte/compte_creer')
             . view('templates/bas');
-        }
+    }
 
         public function connecter()
             {
@@ -152,7 +171,7 @@ class Compte extends BaseController
                     $session = session();
 
                     $role = $model->get_role_by_pseudo($username);
-                    if ($role && $role['pfl_role'] === 'A') {
+                    if ($role && $role['cpt_role'] === 'A') {
                         $menu = 'menu_administrateur';
                     } else {
                         $menu = 'menu_membre';
@@ -200,7 +219,7 @@ class Compte extends BaseController
                 $model = model(Db_model::class);
 
                 $role = $model->get_role_by_pseudo($pseudo);
-                if ($role && $role['pfl_role'] === 'A') {
+                if ($role && $role['cpt_role'] === 'A') {
                     $menu = 'menu_administrateur';
                 } else {
                     $menu = 'menu_membre';

@@ -50,28 +50,28 @@
                 <span class="field-value"><?= esc($profil['cpt_pseudo']) ?></span>
             </div>
 
-            <?php if ($profil['pfl_role'] === 'A' || $profil['pfl_role'] === 'M'): ?>
+            <?php if ($profil['cpt_role'] === 'A' || $profil['cpt_role'] === 'M'): ?>
 
                 <!-- Infos complètes -->
                 <div class="profile-field">
                     <span class="field-label">Email</span>
-                    <span class="field-value"><?= esc($profil['pfl_email']) ?></span>
+                    <span class="field-value"><?= esc($profil['cpt_email']) ?></span>
                 </div>
 
                 <div class="profile-field">
                     <span class="field-label">Nom</span>
-                    <span class="field-value"><?= esc($profil['pfl_nom']) ?></span>
+                    <span class="field-value"><?= esc($profil['cpt_nom']) ?></span>
                 </div>
 
                 <div class="profile-field">
                     <span class="field-label">Prénom</span>
-                    <span class="field-value"><?= esc($profil['pfl_prenom']) ?></span>
+                    <span class="field-value"><?= esc($profil['cpt_prenom']) ?></span>
                 </div>
 
                 <div class="profile-field">
                     <span class="field-label">Rôle</span>
                     <span class="field-value">
-                        <?php if ($profil['pfl_role'] === 'A'): ?>
+                        <?php if ($profil['cpt_role'] === 'A'): ?>
                             <span class="badge badge-admin">Administrateur</span>
                         <?php else: ?>
                             <span class="badge badge-member">Membre</span>

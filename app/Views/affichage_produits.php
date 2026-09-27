@@ -1,301 +1,207 @@
-<style>
-/* =========================
-   PAGE CATALOGUE PRODUITS
-   ========================= */
+<?php use App\Libraries\CloudinaryService; ?>
 
-h2 {
-    font-size: 28px;
-    margin-bottom: 20px;
-    color: #1f2937;
-    font-weight: 700;
-}
+<div class="page">
 
-h3 {
-    font-size: 22px;
-    margin: 30px 0 18px;
-    color: #1f2937;
-}
+    <header class="page-header">
+        <h1 class="page-title"><?= esc($titre) ?></h1>
+        <p class="page-subtitle"><?= count($produits) ?> produit<?= count($produits) > 1 ? 's' : '' ?> au catalogue</p>
+    </header>
 
-/* Messages */
-.badge {
-    display: inline-block;
-    padding: 10px 16px;
-    border-radius: 8px;
-    margin-bottom: 18px;
-    font-size: 14px;
-    font-weight: 600;
-}
+    <?php if (session()->getFlashdata('error')) : ?>
+        <div class="alert alert-error" role="alert">
+            <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+            <span><?= esc(session()->getFlashdata('error')) ?></span>
+        </div>
+    <?php endif; ?>
 
-.badge-pending {
-    background: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffe69c;
-}
+    <?php if (session()->getFlashdata('success')) : ?>
+        <div class="alert alert-success" role="status">
+            <i class="fas fa-circle-check" aria-hidden="true"></i>
+            <span><?= esc(session()->getFlashdata('success')) ?></span>
+        </div>
+    <?php endif; ?>
 
-.badge-valid {
-    background: #d1e7dd;
-    color: #0f5132;
-    border: 1px solid #a3cfbb;
-}
+    <?php if (empty($produits)) : ?>
+        <div class="empty-state">
+            <p>Aucun produit dans le catalogue. Ajoutez le premier ci-dessous.</p>
+        </div>
+    <?php else : ?>
+        <div class="table-wrap">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Produit</th>
+                            <th>Catégorie</th>
+                            <th>Prix &amp; stock</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($produits as $p) : ?>
+                            <tr>
+                                <td>
+                                    <div class="prd-cell-product">
+                                        <?php if (! empty($p['prd_image'])) : ?>
+                                            <img class="prd-thumb"
+                                                 src="<?= esc(CloudinaryService::thumbnail($p['prd_image'], 104, 104)) ?>"
+                                                 alt="<?= esc($p['prd_nom']) ?>"
+                                                 loading="lazy"
+                                                 width="52" height="52">
+                                        <?php else : ?>
+                                            <span class="prd-thumb-empty" aria-hidden="true">
+                                                <i class="fas fa-image"></i>
+                                            </span>
+                                        <?php endif; ?>
 
-/* Tableau */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #ffffff;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
-    margin-top: 15px;
-}
+                                        <span>
+                                            <span class="prd-cell-name"><?= esc($p['prd_nom']) ?></span>
+                                            <?php if (! empty($p['prd_marque'])) : ?>
+                                                <span class="prd-cell-meta"><?= esc($p['prd_marque']) ?></span>
+                                            <?php endif; ?>
+                                        </span>
+                                    </div>
+                                </td>
 
-thead {
-    background: #1f2937;
-    color: white;
-}
+                                <td><?= esc($p['prd_categorie'] ?: '—') ?></td>
 
-th {
-    padding: 15px 14px;
-    text-align: left;
-    font-size: 14px;
-    font-weight: 600;
-}
+                                <td>
+                                    <?= form_open_multipart('produits/modifier/' . $p['prd_id'], ['class' => 'row-actions']) ?>
+                                        <input type="number" step="0.01" min="0" class="input-sm"
+                                               name="prd_prix" value="<?= esc($p['prd_prix']) ?>"
+                                               aria-label="Prix en TND">
+                                        <input type="number" name="prd_stock" class="input-sm"
+                                               value="<?= esc($p['prd_stock']) ?>"
+                                               aria-label="Stock">
+                                        <input type="file" name="prd_image" class="input-file-sm"
+                                               accept=".jpg,.jpeg,.png,.webp,.gif"
+                                               aria-label="Remplacer l'image">
+                                        <button class="btn btn-primary btn-icon" type="submit" title="Enregistrer">
+                                            <i class="fas fa-check" aria-hidden="true"></i>
+                                        </button>
+                                    <?= form_close() ?>
+                                </td>
 
-td {
-    padding: 14px;
-    border-bottom: 1px solid #e5e7eb;
-    color: #374151;
-    font-size: 14px;
-}
+                                <td>
+                                    <a href="<?= base_url('/produits/supprimer/' . $p['prd_id']) ?>"
+                                       onclick="return confirm('Supprimer ce produit du catalogue ?');"
+                                       class="btn btn-danger btn-sm">
+                                        Supprimer
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <?php endif; ?>
 
-tbody tr {
-    transition: background 0.2s ease;
-}
+    <section class="card">
+        <h2 class="section-title">Ajouter un produit</h2>
 
-tbody tr:hover {
-    background: #f8fafc;
-}
+        <?= form_open_multipart('produits/ajouter') ?>
+        <?= csrf_field() ?>
 
-tbody tr:last-child td {
-    border-bottom: none;
-}
+        <div class="field-grid">
+            <div class="field">
+                <label for="prd_nom">Nom du produit</label>
+                <input type="text" id="prd_nom" name="prd_nom" placeholder="Ex : Caméra IP 4MP" required>
+            </div>
 
-/* Formulaire modification prix / stock */
-td form {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin: 0;
-}
+            <div class="field">
+                <label for="prd_marque">Marque</label>
+                <input type="text" id="prd_marque" name="prd_marque" placeholder="Ex : Hikvision" autocomplete="off">
+            </div>
+        </div>
 
-td form input {
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    padding: 8px;
-    font-size: 14px;
-    outline: none;
-    transition: 0.2s;
-}
+        <div class="field-grid">
+            <div class="field">
+                <label for="prd_categorie">Catégorie</label>
+                <input type="text" id="prd_categorie" name="prd_categorie" placeholder="Ex : Caméra, Alarme, Interphone">
+            </div>
 
-td form input:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-}
+            <div class="field">
+                <label for="prd_prix">Prix (TND)</label>
+                <input type="number" step="0.01" min="0" id="prd_prix" name="prd_prix" placeholder="0.00" required>
+            </div>
 
-/* Bouton général */
-.btn-submit {
-    border: none;
-    background: #2563eb;
-    color: white;
-    padding: 9px 16px;
-    border-radius: 7px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
+            <div class="field">
+                <label for="prd_stock">Stock</label>
+                <input type="number" min="0" id="prd_stock" name="prd_stock" value="0">
+            </div>
+        </div>
 
-.btn-submit:hover {
-    background: #1d4ed8;
-    transform: translateY(-1px);
-}
+        <div class="field">
+            <label>Image du produit</label>
+            <div class="upload-zone">
+                <img class="upload-preview" id="apercu" alt="Aperçu de l'image sélectionnée">
 
-/* Petit bouton validation */
-td .btn-submit {
-    width: 38px;
-    height: 36px;
-    padding: 0;
-    font-size: 17px;
-}
+                <div class="upload-field">
+                    <input type="file" class="upload-input" id="prd_image"
+                           name="prd_image" accept=".jpg,.jpeg,.png,.webp,.gif">
+                    <label class="upload-trigger" for="prd_image" id="trigger-libelle">
+                        <i class="fas fa-cloud-arrow-up" aria-hidden="true"></i>
+                        <span>Choisir une image</span>
+                    </label>
+                    <p class="upload-hint">JPEG, PNG, WebP ou GIF — 5 Mo maximum. Envoyée sur Cloudinary.</p>
+                </div>
+            </div>
+        </div>
 
-/* Bouton supprimer */
-.btn-delete {
-    display: inline-block;
-    background: #dc2626;
-    color: white;
-    text-decoration: none;
-    padding: 8px 13px;
-    border-radius: 7px;
-    font-size: 13px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
+        <button class="btn btn-primary" type="submit">
+            <i class="fas fa-plus" aria-hidden="true"></i>
+            Ajouter le produit
+        </button>
+        <?= form_close() ?>
+    </section>
 
-.btn-delete:hover {
-    background: #b91c1c;
-    transform: translateY(-1px);
-}
+</div>
 
-/* Séparation */
-hr {
-    border: 0;
-    border-top: 1px solid #e5e7eb;
-    margin: 35px 0;
-}
+<script>
+    // Aperçu de l'image avant envoi
+    (function () {
+        const input = document.getElementById('prd_image');
+        const apercu = document.getElementById('apercu');
+        const trigger = document.getElementById('trigger-libelle');
+        const libelle = trigger.querySelector('span');
+        const TAILLES = 5 * 1024 * 1024;
+        const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-/* =========================
-   FORMULAIRE AJOUT
-   ========================= */
+        if (!input) return;
 
-form[action*="produits/ajouter"] {
-    max-width: 650px;
-    background: #ffffff;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
-}
+        input.addEventListener('change', function () {
+            const fichier = input.files && input.files[0];
 
-form[action*="produits/ajouter"] label {
-    display: block;
-    margin-top: 15px;
-    margin-bottom: 7px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #374151;
-}
+            if (!fichier) {
+                apercu.style.display = 'none';
+                apercu.removeAttribute('src');
+                trigger.classList.remove('is-set');
+                libelle.textContent = 'Choisir une image';
+                return;
+            }
 
-form[action*="produits/ajouter"] input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 11px 13px;
-    border: 1px solid #d1d5db;
-    border-radius: 7px;
-    background: #f9fafb;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.2s ease;
-}
+            // Contrôle miroir de la validation côté serveur
+            if (TYPES.indexOf(fichier.type) === -1) {
+                alert('Format non autorisé. Utilisez JPEG, PNG, WebP ou GIF.');
+                input.value = '';
+                return;
+            }
+            if (fichier.size > TAILLES) {
+                alert('Image trop lourde : 5 Mo maximum.');
+                input.value = '';
+                return;
+            }
 
-form[action*="produits/ajouter"] input:focus {
-    background: white;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-}
+            const lecteur = new FileReader();
+            lecteur.onload = function (e) {
+                apercu.src = e.target.result;
+                apercu.style.display = 'block';
+            };
+            lecteur.readAsDataURL(fichier);
 
-form[action*="produits/ajouter"] .btn-submit {
-    margin-top: 5px;
-    padding: 11px 22px;
-}
-
-/* =========================
-   RESPONSIVE
-   ========================= */
-
-@media (max-width: 900px) {
-    table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
-    }
-
-    th,
-    td {
-        padding: 11px;
-    }
-}
-
-@media (max-width: 600px) {
-    h2 {
-        font-size: 23px;
-    }
-
-    h3 {
-        font-size: 19px;
-    }
-
-    form[action*="produits/ajouter"] {
-        padding: 18px;
-    }
-}
-</style>
-<h2><?= esc($titre) ?></h2>
-<br>
-
-<?php if (session()->getFlashdata('error')) : ?>
-    <p class="badge badge-pending"><?= esc(session()->getFlashdata('error')) ?></p>
-<?php endif; ?>
-<?php if (session()->getFlashdata('success')) : ?>
-    <p class="badge badge-valid"><?= esc(session()->getFlashdata('success')) ?></p>
-<?php endif; ?>
-
-<?php if (empty($produits)) : ?>
-    <p>Aucun produit dans le catalogue.</p>
-<?php else : ?>
-    <table>
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Marque</th>
-                <th>Catégorie</th>
-                <th>Prix</th>
-                <th>Stock</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($produits as $p) : ?>
-                <tr>
-                    <td><?= esc($p['prd_nom']) ?></td>
-                    <td><?= esc($p['prd_marque']) ?></td>
-                    <td><?= esc($p['prd_categorie']) ?></td>
-                    <td colspan="2">
-                        <form method="post" action="<?= base_url('produits/modifier/' . $p['prd_id']) ?>" style="display:flex; gap:8px; align-items:center">
-                            <input type="number" step="0.01" name="prd_prix" value="<?= esc($p['prd_prix']) ?>" style="width:90px"> TND
-                            <input type="number" name="prd_stock" value="<?= esc($p['prd_stock']) ?>" style="width:70px"> en stock
-                            <button class="btn-submit" type="submit">✔</button>
-                        </form>
-                    </td>
-                    <td>
-                        <a href="<?= base_url('/produits/supprimer/' . $p['prd_id']) ?>"
-                           onclick="return confirm('Supprimer ce produit du catalogue ?');"
-                           class="btn-delete">
-                            Supprimer
-                        </a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-<?php endif; ?>
-
-<hr>
-
-<h3>Ajouter un produit</h3>
-<form method="post" action="<?= base_url('produits/ajouter') ?>">
-    <label>Nom :</label>
-    <input type="text" name="prd_nom" placeholder="Nom du produit" required>
-
-    <label>Marque :</label>
-    <input type="text" name="prd_marque" placeholder="Marque">
-
-    <label>Catégorie :</label>
-    <input type="text" name="prd_categorie" placeholder="Ex : Caméra, Alarme, Contrôle d'accès">
-
-    <label>Prix (TND) :</label>
-    <input type="number" step="0.01" name="prd_prix" required>
-
-    <label>Stock :</label>
-    <input type="number" name="prd_stock" value="0">
-
-    <br><br>
-    <button class="btn-submit" type="submit">Ajouter</button>
-</form>
+            trigger.classList.add('is-set');
+            libelle.textContent = fichier.name;
+        });
+    })();
+</script>

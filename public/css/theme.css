@@ -378,6 +378,406 @@ textarea::placeholder {
 }
 
 /* ============================================
+   IMAGES PRODUIT
+   ============================================ */
+
+.prd-thumb {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--c-border);
+    background: var(--c-surface);
+    display: block;
+}
+
+.prd-thumb-empty {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    border: 1px dashed var(--c-border);
+    background: var(--c-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #b9b8b1;
+    font-size: 1.1rem;
+}
+
+.prd-cell-product {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    min-width: 210px;
+}
+
+.prd-cell-product .prd-cell-name {
+    font-weight: 500;
+}
+
+.prd-cell-product .prd-cell-meta {
+    display: block;
+    color: var(--c-muted);
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+/* Zone d'upload avec aperçu */
+
+.upload-zone {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.upload-preview {
+    width: 84px;
+    height: 84px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--c-border);
+    background: var(--c-surface);
+    display: none;
+}
+
+.upload-field {
+    flex: 1;
+    min-width: 220px;
+}
+
+/* input[type=file] masqué : on le déclenche via un label */
+.upload-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.upload-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .7rem 1.1rem;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--c-ink);
+    background: var(--c-card);
+    border: 1px dashed var(--c-muted);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: border-color .15s, background-color .15s, color .15s;
+}
+
+.upload-trigger:hover {
+    border-color: var(--c-accent-mid);
+    color: var(--c-accent);
+    background: var(--c-accent-light);
+}
+
+.upload-input:focus-visible + .upload-trigger {
+    outline: 2px solid var(--c-accent-mid);
+    outline-offset: 3px;
+}
+
+.upload-trigger.is-set {
+    border-style: solid;
+    border-color: var(--c-accent-mid);
+    color: var(--c-accent);
+    background: var(--c-accent-light);
+}
+
+.upload-hint {
+    margin: .5rem 0 0;
+    font-size: 12px;
+    color: var(--c-muted);
+}
+
+/* Champ compact de remplacement d'image dans le tableau */
+.input-file-sm {
+    max-width: 150px;
+    font-size: 11px;
+    padding: .3rem !important;
+}
+
+@media (max-width: 768px) {
+    .upload-zone {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .upload-field {
+        min-width: 100%;
+    }
+}
+
+/* ============================================
+   ALERTES
+   ============================================ */
+
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-left-width: 3px;
+    border-radius: var(--radius-sm);
+    padding: .8rem 1rem;
+    margin-bottom: var(--gap);
+    font-size: .875rem;
+    line-height: 1.5;
+}
+
+.alert i {
+    margin-top: .2rem;
+    flex-shrink: 0;
+}
+
+.alert-error {
+    background: var(--c-danger-bg);
+    border-color: rgba(180, 35, 24, .28);
+    border-left-color: var(--c-danger);
+    color: var(--c-danger);
+}
+
+.alert-success {
+    background: var(--c-accent-light);
+    border-color: rgba(59, 109, 17, .25);
+    border-left-color: var(--c-accent);
+    color: var(--c-accent);
+}
+
+/* ============================================
+   FORMULAIRE DEVIS
+   ============================================ */
+
+.devis-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: var(--gap);
+    align-items: start;
+}
+
+.devis-side {
+    position: sticky;
+    top: 1.5rem;
+}
+
+/* Résumé chiffré */
+
+.devis-total {
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.35rem;
+    margin-bottom: var(--gap);
+}
+
+.devis-total h3 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 1.05rem;
+    font-weight: 400;
+    margin-bottom: 1rem;
+    color: var(--c-ink);
+}
+
+.devis-total-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .4rem 0;
+    font-size: .875rem;
+    color: var(--c-muted);
+}
+
+.devis-total-row span:last-child {
+    color: var(--c-ink);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.devis-total-row.is-sub {
+    font-size: .8rem;
+    opacity: .9;
+}
+
+.devis-total-sep {
+    height: 1px;
+    background: var(--c-border);
+    margin: .6rem 0;
+}
+
+.devis-total-row.is-grand {
+    font-size: 1rem;
+    color: var(--c-ink);
+    padding-top: .2rem;
+}
+
+.devis-total-row.is-grand span:last-child {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--c-accent);
+}
+
+.devis-total.is-empty .is-grand span:last-child {
+    color: #b9b8b1;
+}
+
+/* Lignes de produits */
+
+.devis-line {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: .65rem;
+}
+
+.devis-line select {
+    flex: 1;
+    min-width: 0;
+}
+
+.devis-line-thumb {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--c-border);
+    background: var(--c-surface);
+    display: block;
+}
+
+.devis-line-thumb.is-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #b9b8b1;
+    font-size: .9rem;
+    border-style: dashed;
+}
+
+.devis-line-total {
+    width: 96px;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: .85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--c-ink);
+}
+
+/* Quantité supérieure au stock disponible */
+.js-qty.is-over {
+    border-color: var(--c-danger);
+    background: var(--c-danger-bg);
+    color: var(--c-danger);
+    font-weight: 600;
+}
+
+/* Indice de tarif */
+
+.rate-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    margin-top: .5rem;
+    padding: .3rem .65rem;
+    font-size: .78rem;
+    color: var(--c-muted);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: 999px;
+}
+
+.rate-hint strong {
+    color: var(--c-accent);
+    font-weight: 600;
+}
+
+/* Sélecteur de mode client */
+
+.client-mode {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: 1.1rem;
+}
+
+.client-mode label {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    margin: 0;
+    padding: .5rem .9rem;
+    font-size: 12px;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+    color: var(--c-ink);
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color .15s, background-color .15s, color .15s;
+}
+
+.client-mode input {
+    accent-color: var(--c-accent);
+    margin: 0;
+}
+
+.client-mode label:hover {
+    border-color: var(--c-accent-mid);
+}
+
+.client-mode label:has(input:checked) {
+    background: var(--c-accent-light);
+    border-color: var(--c-accent-mid);
+    color: var(--c-accent);
+    font-weight: 600;
+}
+
+@media (max-width: 900px) {
+    .devis-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .devis-side {
+        position: static;
+    }
+}
+
+@media (max-width: 640px) {
+    .devis-line {
+        flex-wrap: wrap;
+    }
+
+    .devis-line select {
+        flex: 1 1 100%;
+        order: 2;
+    }
+
+    .devis-line-thumb {
+        order: 1;
+    }
+
+    .devis-line-total {
+        order: 3;
+        width: auto;
+        text-align: left;
+    }
+}
+
+/* ============================================
    ÉTAT VIDE
    ============================================ */
 

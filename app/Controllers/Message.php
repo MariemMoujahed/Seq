@@ -140,7 +140,7 @@ class Message extends BaseController
         $data['news'] = $model->get_all_msg();
         $role = $model->get_role_by_pseudo($pseudo);
         $role = $model->get_role_by_pseudo($pseudo);
-        if ($role && $role['pfl_role'] === 'A') {
+        if ($role && $role['cpt_role'] === 'A') {
             $menu = 'menu_administrateur';
         } else {
             $menu = 'menu_membre';

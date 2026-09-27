@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\Db_model;
+use App\Libraries\CloudinaryService;
 
 class Produits extends BaseController
 {
@@ -22,7 +23,7 @@ class Produits extends BaseController
         $role   = $model->get_role_by_pseudo($pseudo);
 
         // Seul l'administrateur gère le catalogue produits
-        if (! $role || $role['pfl_role'] !== 'A') {
+        if (! $role || $role['cpt_role'] !== 'A') {
             return redirect()->to('/devis/lister_dev');
         }
 
@@ -50,7 +51,7 @@ class Produits extends BaseController
         $model  = model(Db_model::class);
         $role   = $model->get_role_by_pseudo($pseudo);
 
-        if (! $role || $role['pfl_role'] !== 'A') {
+        if (! $role || $role['cpt_role'] !== 'A') {
             return redirect()->to('/devis/lister_dev');
         }
 
@@ -65,10 +66,42 @@ class Produits extends BaseController
         }
 
         $db = \Config\Database::connect();
+
+        $imageUrl     = null;
+        $imagePublicId = null;
+
+        // Téléversement facultatif vers Cloudinary
+        $file = $this->request->getFile('prd_image');
+        if ($file !== null && $file->isValid() && $file->getSize() > 0) {
+            $erreur = CloudinaryService::validateImage($file->getTempName(), $file->getClientName());
+
+            if ($erreur !== '') {
+                return redirect()->to('/produits/lister_prd')->with('error', 'Image refusée : ' . $erreur);
+            }
+
+            try {
+                $televersee    = CloudinaryService::upload(
+                    $file->getTempName(),
+                    '',
+                    'produits',
+                    url_title($nom, '-', true)
+                );
+                $imageUrl      = $televersee['url'];
+                $imagePublicId = $televersee['public_id'];
+            } catch (\Throwable $e) {
+                log_message('error', 'Cloudinary upload failed: {msg}', ['msg' => $e->getMessage()]);
+
+                return redirect()->to('/produits/lister_prd')
+                    ->with('error', "Le produit n'a pas été enregistré : l'envoi de l'image a échoué.");
+            }
+        }
+
         $db->table('t_produit_prd')->insert([
             'prd_nom'       => $nom,
             'prd_marque'    => $marque,
             'prd_categorie' => $categorie,
+            'prd_image'     => $imageUrl,
+            'prd_image_id'  => $imagePublicId,
             'prd_prix'      => $prix,
             'prd_stock'     => $stock,
         ]);
@@ -91,7 +124,7 @@ class Produits extends BaseController
         $model  = model(Db_model::class);
         $role   = $model->get_role_by_pseudo($pseudo);
 
-        if (! $role || $role['pfl_role'] !== 'A') {
+        if (! $role || $role['cpt_role'] !== 'A') {
             return redirect()->to('/devis/lister_dev');
         }
 
@@ -99,12 +132,42 @@ class Produits extends BaseController
         $stock = (int) $this->request->getPost('prd_stock');
 
         $db = \Config\Database::connect();
+
+        $champs = [
+            'prd_prix'  => $prix,
+            'prd_stock' => $stock,
+        ];
+
+        // Remplacement facultatif de l'image
+        $file = $this->request->getFile('prd_image');
+        if ($file !== null && $file->isValid() && $file->getSize() > 0) {
+            $erreur = CloudinaryService::validateImage($file->getTempName(), $file->getClientName());
+
+            if ($erreur !== '') {
+                return redirect()->to('/produits/lister_prd')->with('error', 'Image refusée : ' . $erreur);
+            }
+
+            $actuel = $db->table('t_produit_prd')->where('prd_id', (int) $id)->get()->getRowArray();
+            $ancien = $actuel['prd_image_id'] ?? null;
+
+            try {
+                // On réutilise le même public_id : Cloudinary écrase l'ancien
+                // fichier au lieu d'en créer un second.
+                $televersee = CloudinaryService::upload($file->getTempName(), (string) $ancien);
+
+                $champs['prd_image']    = $televersee['url'];
+                $champs['prd_image_id'] = $televersee['public_id'];
+            } catch (\Throwable $e) {
+                log_message('error', 'Cloudinary replace failed: {msg}', ['msg' => $e->getMessage()]);
+
+                return redirect()->to('/produits/lister_prd')
+                    ->with('error', "Le prix et le stock n'ont pas été enregistrés : l'envoi de l'image a échoué.");
+            }
+        }
+
         $db->table('t_produit_prd')
             ->where('prd_id', (int) $id)
-            ->update([
-                'prd_prix'  => $prix,
-                'prd_stock' => $stock,
-            ]);
+            ->update($champs);
 
         return redirect()->to('/produits/lister_prd')->with('success', 'Produit mis à jour.');
     }
@@ -124,7 +187,7 @@ class Produits extends BaseController
         $model  = model(Db_model::class);
         $role   = $model->get_role_by_pseudo($pseudo);
 
-        if (! $role || $role['pfl_role'] !== 'A') {
+        if (! $role || $role['cpt_role'] !== 'A') {
             return redirect()->to('/devis/lister_dev');
         }
 
@@ -137,6 +200,10 @@ class Produits extends BaseController
             return redirect()->to('/produits/lister_prd')
                 ->with('error', "Ce produit est utilisé dans $utilise devis et ne peut pas être supprimé.");
         }
+
+        // Libère l'espace Cloudinary associé avant de perdre la référence.
+        $imageId = $db->table('t_produit_prd')->where('prd_id', (int) $id)->get()->getRowArray()['prd_image_id'] ?? null;
+        CloudinaryService::destroy($imageId);
 
         $db->table('t_produit_prd')->where('prd_id', (int) $id)->delete();
 

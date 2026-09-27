@@ -21,7 +21,6 @@
 <?php
 $sections = [
     'comptes'  => '👤 t_compte_cpt',
-    'profils'  => '📋 t_profil_pfl',
     'devis'    => '📄 t_devis_dev',
     'details'  => '🔧 t_detail_det',
     'messages' => '✉️ t_message_msg',

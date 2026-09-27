@@ -7,9 +7,10 @@ class TestDB extends BaseController
     {
         $db = \Config\Database::connect();
         
+        // t_profil_pfl a été fusionnée dans t_compte_cpt : il n'y a plus
+        // de section « profils » distincte.
         $tables = [
             'comptes'  => $db->query("SELECT * FROM t_compte_cpt")->getResultArray(),
-            'profils'  => $db->query("SELECT * FROM t_profil_pfl")->getResultArray(),
             'devis'    => $db->query("SELECT * FROM t_devis_dev")->getResultArray(),
             'details'  => $db->query("SELECT * FROM t_detail_det")->getResultArray(),
             'messages' => $db->query("SELECT * FROM t_message_msg")->getResultArray(),

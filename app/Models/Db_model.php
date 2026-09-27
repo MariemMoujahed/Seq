@@ -57,53 +57,54 @@ class Db_model extends Model
         return $query->getRow();
     }
 
-    function set_compte($saisie)
+    /**
+     * Crée un compte et son profil en une seule ligne.
+     *
+     * Les profils vivaient dans une table séparée (t_profil_pfl) reliée par
+     * une clé étrangère 1-1 : deux lignes à écrire, donc deux chances
+     * d'en laisser une orpheline si le second insert échouait.
+     */
+    public function creer_compte(array $saisie): bool
     {
-        $db = \Config\Database::connect();
-
-        $pseudo = $saisie['pseudo'];
-        $mdp    = $saisie['mdp'];
-
         $salt = "OnRajouteDuSelPourAllongerleMDP123!!45678__Test";
 
-        $mdp_hash = hash('sha256', $salt . $mdp);
-
-        $sql = "INSERT INTO t_compte_cpt 
-                (cpt_pseudo, cpt_mdp, cpt_statut) 
-                VALUES ('$pseudo', '$mdp_hash', 'A')";
-
-        return $db->query($sql);
+        return (bool) $this->db->table('t_compte_cpt')->insert([
+            'cpt_pseudo'      => $saisie['pseudo'],
+            'cpt_mdp'         => hash('sha256', $salt . $saisie['mdp']),
+            'cpt_statut'      => 'A',
+            'cpt_nom'         => $saisie['nom'],
+            'cpt_prenom'      => $saisie['prenom'],
+            'cpt_adresse'     => $saisie['adresse'],
+            'cpt_telephone'   => $saisie['telephone'],
+            'cpt_email'       => $saisie['email'] ?? null,
+            'cpt_entreprise'  => $saisie['entreprise'] ?? null,
+            'cpt_role'        => 'M',
+        ]);
     }
 
-    public function set_profil($saisie)
+    /**
+     * Le pseudo est-il déjà pris ?
+     */
+    public function pseudo_existe(string $pseudo): bool
     {
-        $data = [
-            'pfl_nom' => $saisie['nom'],
-            'pfl_prenom' => $saisie['prenom'],
-            'pfl_adresse' => $saisie['adresse'],
-            'pfl_telephone' => $saisie['telephone'],
-            'pfl_entreprise' => $saisie['entreprise'] ?? null,
-            'pfl_role' => 'M',
-            'cpt_pseudo' => $saisie['pseudo']
-        ];
-
-        return $this->db->table('t_profil_pfl')->insert($data);
+        return $this->db->table('t_compte_cpt')
+            ->where('cpt_pseudo', $pseudo)
+            ->countAllResults() > 0;
     }
 
     public function connect_compte($u, $p)
     {
-        $u = addslashes($u);  
-        $sql = "SELECT  cpt_pseudo, cpt_mdp
-                FROM t_compte_cpt
-                WHERE cpt_pseudo = '".$u."'";
+        // Requête préparée : addslashes() n'est pas une parade fiable
+        // contre l'injection SQL (dépendant de l'encodage de connexion).
+        $user = $this->db->table('t_compte_cpt')
+            ->where('cpt_pseudo', $u)
+            ->get()
+            ->getRow();
 
-        $query = $this->db->query($sql);
-
-        if ($query->getNumRows() == 0) {
+        if ($user === null) {
             return false;
         }
 
-        $user = $query->getRow();
         $stored = $user->cpt_mdp;
 
         $salt = "OnRajouteDuSelPourAllongerleMDP123!!45678__Test";
@@ -117,10 +118,9 @@ class Db_model extends Model
 
             $new_hash = $sha256;
 
-            $update_sql = "UPDATE t_compte_cpt
-                        SET cpt_mdp = '".$new_hash."'
-                        WHERE cpt_pseudo = '".$u."';";
-            $this->db->query($update_sql);
+            $this->db->table('t_compte_cpt')
+                ->where('cpt_pseudo', $user->cpt_pseudo)
+                ->update(['cpt_mdp' => $new_hash]);
 
             return $user;
         }
@@ -131,41 +131,39 @@ class Db_model extends Model
 
     public function get_profil($u)
     {
-        $sql = "SELECT *
-                FROM t_profil_pfl
-                JOIN t_compte_cpt USING(cpt_pseudo)
-                WHERE cpt_pseudo = '".$u."';";
+        $row = $this->db->table('t_compte_cpt')
+            ->where('cpt_pseudo', $u)
+            ->get()
+            ->getRowArray();
 
-        $query = $this->db->query($sql);
-
-        if ($query->getNumRows() > 0) {
-            return $query->getRowArray(); 
-        }
-
-        return false;
+        return $row === null ? false : $row;
     }
 
     public function get_id_by_pseudo($pseudo)
     {
-        $sql = "SELECT cpt_pseudo FROM t_compte_cpt WHERE cpt_pseudo = ?";
-        $query = $this->db->query($sql, [$pseudo]);
-        return $query->getRowArray();
+        return $this->db->table('t_compte_cpt')
+            ->select('cpt_pseudo')
+            ->where('cpt_pseudo', $pseudo)
+            ->get()
+            ->getRowArray();
     }
-    
-    
+
+
     public function get_all_profil()
     {
-        $resultat = $this->db->query("SELECT * FROM t_profil_pfl 
-                                    JOIN t_compte_cpt USING (cpt_pseudo);");
-        return $resultat->getResultArray();
+        return $this->db->table('t_compte_cpt')
+            ->orderBy('cpt_role', 'ASC')
+            ->orderBy('cpt_pseudo', 'ASC')
+            ->get()
+            ->getResultArray();
     }
 
     public function get_profils_num()
     {
-            $requete2 = "SELECT COUNT(*) AS total_profil FROM t_profil_pfl;";
-                        
-            $resultat2 = $this->db->query($requete2);
-            return $resultat2->getRow();
+        return $this->db->table('t_compte_cpt')
+            ->select('COUNT(*) AS total_profil')
+            ->get()
+            ->getRow();
     }
 
 
@@ -196,59 +194,50 @@ class Db_model extends Model
 
     public function get_parametre($cle)
     {
-        $cle = addslashes($cle);
-
-        $sql = "SELECT * 
-                FROM t_parametre_prm
-                WHERE prm_cle = '".$cle."'";
-
-        return $this->db->query($sql)->getRowArray();
+        return $this->db->table('t_parametre_prm')
+            ->where('prm_cle', $cle)
+            ->get()
+            ->getRowArray();
     }
 
     public function get_user($pseudo)
     {
-        $pseudo = addslashes($pseudo);
-
-        $sql = "SELECT * 
-                FROM t_compte_cpt
-                WHERE cpt_pseudo = '".$pseudo."'";
-
-        return $this->db->query($sql)->getRow();
+        return $this->db->table('t_compte_cpt')
+            ->where('cpt_pseudo', $pseudo)
+            ->get()
+            ->getRow();
     }
 
     public function update_statut($pseudo, $statut)
     {
-        $pseudo = addslashes($pseudo);
-        $statut = addslashes($statut);
+        return $this->db->table('t_compte_cpt')
+            ->where('cpt_pseudo', $pseudo)
+            ->update(['cpt_statut' => $statut]);
+    }
 
-        $sql = "UPDATE t_compte_cpt
-                SET cpt_statut = '".$statut."'
-                WHERE cpt_pseudo = '".$pseudo."'";
-
-        return $this->db->query($sql);
+    public function update_role($pseudo, $role)
+    {
+        return $this->db->table('t_compte_cpt')
+            ->where('cpt_pseudo', $pseudo)
+            ->update(['cpt_role' => $role]);
     }
 
     public function delete_profil($pseudo)
     {
-        $pseudo = addslashes($pseudo);
-
-        $sql = "DELETE FROM t_profil_pfl
-                WHERE cpt_pseudo = '".$pseudo."'";
-
-        return $this->db->query($sql);
+        // Le profil fait partie de t_compte_cpt : rien à supprimer séparément.
+        return true;
     }
 
     public function delete_compte($pseudo)
     {
-        $pseudo = addslashes($pseudo);
-        $sql = "DELETE FROM t_compte_cpt
-                WHERE cpt_pseudo = '".$pseudo."'";
-        return $this->db->query($sql);
+        return $this->db->table('t_compte_cpt')
+            ->where('cpt_pseudo', $pseudo)
+            ->delete();
     }
-public function get_role_by_pseudo(string $pseudo): ?array
+
+    public function get_role_by_pseudo(string $pseudo): ?array
     {
-        $db = \Config\Database::connect();
-        return $db->table('t_profil_pfl')
+        return $this->db->table('t_compte_cpt')
             ->where('cpt_pseudo', $pseudo)
             ->get()
             ->getRowArray();
@@ -342,12 +331,12 @@ public function get_role_by_pseudo(string $pseudo): ?array
         return (float) ($row['det_prix'] ?? 0);
     }
     public function get_profil_by_pseudo($pseudo)
-{
-    return $this->db->table('t_profil_pfl')
-        ->where('cpt_pseudo', $pseudo)
-        ->get()
-        ->getRowArray();
-}
+    {
+        return $this->db->table('t_compte_cpt')
+            ->where('cpt_pseudo', $pseudo)
+            ->get()
+            ->getRowArray();
+    }
 
 
 }

@@ -154,6 +154,16 @@
     display: none;
 }
 
+/* Messages de validation CodeIgniter (vue single.php) */
+.auth-field-msg .help-block,
+.auth-card .help-block {
+    display: block;
+    margin-top: .4rem;
+    font-size: .78rem;
+    line-height: 1.45;
+    color: #ff8a8a;
+}
+
 /* ---------- Robustesse du mot de passe ---------- */
 
 .auth-strength {

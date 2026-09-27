@@ -457,11 +457,11 @@ body {
                 <?php foreach ($logins as $pseudos) : ?>
                     <tr>
                         <td><?= htmlspecialchars($pseudos["cpt_pseudo"]) ?></td>
-                        <td><?= htmlspecialchars($pseudos["pfl_nom"]) ?></td>
-                        <td><?= htmlspecialchars($pseudos["pfl_prenom"]) ?></td>
-                        <td><?= htmlspecialchars($pseudos["pfl_telephone"]) ?></td>
-                        <td><?= htmlspecialchars($pseudos["pfl_adresse"]) ?> </td>
-                        <td><?= htmlspecialchars($pseudos["pfl_email"]) ?></td>
+                        <td><?= htmlspecialchars($pseudos["cpt_nom"]) ?></td>
+                        <td><?= htmlspecialchars($pseudos["cpt_prenom"]) ?></td>
+                        <td><?= htmlspecialchars($pseudos["cpt_telephone"]) ?></td>
+                        <td><?= htmlspecialchars($pseudos["cpt_adresse"]) ?> </td>
+                        <td><?= htmlspecialchars($pseudos["cpt_email"]) ?></td>
 
                         <td>
                             <span class="status-badge <?= $pseudos["cpt_statut"] == 'A' ? 'active' : 'inactive' ?>">
@@ -471,9 +471,9 @@ body {
 
                         <td>
                             <span class="role-badge 
-                                <?= $pseudos["pfl_role"] == 'A' ? 'admin' : ($pseudos["pfl_role"] == 'M' ? 'member' : 'invite') ?>">
+                                <?= $pseudos["cpt_role"] == 'A' ? 'admin' : ($pseudos["cpt_role"] == 'M' ? 'member' : 'invite') ?>">
                                 
-                                <?= $pseudos["pfl_role"] == 'A' ? 'Admin' : ($pseudos["pfl_role"] == 'M' ? 'Membre' : 'Invité') ?>
+                                <?= $pseudos["cpt_role"] == 'A' ? 'Admin' : ($pseudos["cpt_role"] == 'M' ? 'Membre' : 'Invité') ?>
                             </span>
                         </td>
                         <td>

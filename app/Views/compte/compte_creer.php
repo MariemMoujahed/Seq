@@ -17,17 +17,18 @@
                 <div class="auth-field">
                     <label for="pseudo">Pseudo</label>
                     <input class="auth-input" type="text" id="pseudo" name="pseudo"
-                           value="<?= set_value('pseudo') ?>"
-                           placeholder="Votre pseudo"
+                           value="<?= esc(old('pseudo')) ?>"
+                           placeholder="2 à 60 caractères"
                            autocomplete="username"
-                           minlength="2" maxlength="60" required>
+                           minlength="2" maxlength="60" pattern="[A-Za-z0-9._\-]{2,60}"
+                           required>
                     <span class="auth-field-msg"><?= validation_show_error('pseudo') ?></span>
                 </div>
 
                 <div class="auth-field">
                     <label for="prenom">Prénom</label>
                     <input class="auth-input" type="text" id="prenom" name="prenom"
-                           value="<?= set_value('prenom') ?>"
+                           value="<?= esc(old('prenom')) ?>"
                            placeholder="Votre prénom"
                            autocomplete="given-name"
                            maxlength="45" required>
@@ -39,7 +40,7 @@
                 <div class="auth-field">
                     <label for="nom">Nom</label>
                     <input class="auth-input" type="text" id="nom" name="nom"
-                           value="<?= set_value('nom') ?>"
+                           value="<?= esc(old('nom')) ?>"
                            placeholder="Votre nom"
                            autocomplete="family-name"
                            maxlength="60" required>
@@ -47,36 +48,46 @@
                 </div>
 
                 <div class="auth-field">
-                    <label for="adresse">Adresse</label>
-                    <input class="auth-input" type="text" id="adresse" name="adresse"
-                           value="<?= set_value('adresse') ?>"
-                           placeholder="Votre adresse"
-                           autocomplete="street-address"
-                           maxlength="100" required>
-                    <span class="auth-field-msg"><?= validation_show_error('adresse') ?></span>
-                </div>
-            </div>
-
-            <div class="auth-grid">
-                <div class="auth-field">
                     <label for="telephone">Téléphone</label>
                     <input class="auth-input" type="tel" id="telephone" name="telephone"
-                           value="<?= set_value('telephone') ?>"
+                           value="<?= esc(old('telephone')) ?>"
                            placeholder="06 00 00 00 00"
                            autocomplete="tel"
                            maxlength="20" required>
                     <span class="auth-field-msg"><?= validation_show_error('telephone') ?></span>
                 </div>
+            </div>
+
+            <div class="auth-grid">
+                <div class="auth-field">
+                    <label for="email">Email</label>
+                    <input class="auth-input" type="email" id="email" name="email"
+                           value="<?= esc(old('email')) ?>"
+                           placeholder="contact@exemple.tn"
+                           autocomplete="email"
+                           maxlength="100">
+                    <span class="auth-field-msg"><?= validation_show_error('email') ?></span>
+                </div>
 
                 <div class="auth-field">
                     <label for="entreprise">Entreprise <span style="color:var(--gray-dark,#606870);text-transform:none;letter-spacing:0">(optionnel)</span></label>
                     <input class="auth-input" type="text" id="entreprise" name="entreprise"
-                           value="<?= set_value('entreprise') ?>"
+                           value="<?= esc(old('entreprise')) ?>"
                            placeholder="Votre entreprise"
                            autocomplete="organization"
                            maxlength="100">
                     <span class="auth-field-msg"><?= validation_show_error('entreprise') ?></span>
                 </div>
+            </div>
+
+            <div class="auth-field">
+                <label for="adresse">Adresse</label>
+                <input class="auth-input" type="text" id="adresse" name="adresse"
+                       value="<?= esc(old('adresse')) ?>"
+                       placeholder="Adresse complète"
+                       autocomplete="street-address"
+                       maxlength="100" required>
+                <span class="auth-field-msg"><?= validation_show_error('adresse') ?></span>
             </div>
 
             <div class="auth-field">
