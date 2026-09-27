@@ -1,47 +1,43 @@
-<!-- Navbar Wrapper (Horizontal) -->
-<nav class="navbar navbar-expand bg-dark text-white">
-    <a class="navbar-brand d-flex align-items-center text-white">
-        <div class="sidebar-brand-icon rotate-n-15 me-2">
-            <i class="fas fa-laugh-wink" aria-hidden="true"></i>
-        </div>
+<nav class="site-nav">
+    <a class="site-nav-brand" href="<?= base_url('index.php/compte/accueil') ?>">
+        <i class="fas fa-laugh-wink" aria-hidden="true"></i>
         <span>Admin Panel</span>
     </a>
 
-    <ul class="navbar-nav ms-auto d-flex flex-row">
-        <li class="nav-item mx-2">
-            <a class="nav-link text-white" href="<?= base_url('index.php/compte/accueil') ?>">
-                <i class="fas fa-fw fa-calendar-alt me-1" aria-hidden="true"></i>
-                Acceuil
+    <ul class="site-nav-links">
+        <li>
+            <a class="site-nav-link" href="<?= base_url('index.php/compte/accueil') ?>">
+                <i class="fas fa-home" aria-hidden="true"></i>
+                Accueil
             </a>
         </li>
-        <li class="nav-item mx-2">
-            <a class="nav-link text-white" href="<?= base_url('index.php/devis/lister_dev') ?>">
-                <i class="fas fa-fw fa-calendar-alt me-1" aria-hidden="true"></i>
+        <li>
+            <a class="site-nav-link" href="<?= base_url('index.php/devis/lister_dev') ?>">
+                <i class="fas fa-file-invoice" aria-hidden="true"></i>
                 Voir les devis
             </a>
         </li>
-        <li class="nav-item mx-2">
-            <a class="nav-link text-white" href="<?= base_url('index.php/compte/afficher_profil') ?>">
-                <i class="fas fa-fw fa-user me-1" aria-hidden="true"></i>
+        <li>
+            <a class="site-nav-link" href="<?= base_url('index.php/compte/afficher_profil') ?>">
+                <i class="fas fa-user" aria-hidden="true"></i>
                 Mon profil
             </a>
         </li>
-        <li class="nav-item mx-2">
-            <a class="nav-link text-white" href="<?= base_url('index.php/compte/lister') ?>">
-                <i class="fas fa-fw fa-user me-1" aria-hidden="true"></i>
-                Gestion des Comptes/Profils
+        <li>
+            <a class="site-nav-link" href="<?= base_url('index.php/compte/lister') ?>">
+                <i class="fas fa-users-cog" aria-hidden="true"></i>
+                Comptes &amp; profils
             </a>
         </li>
-        <li class="nav-item mx-2">
-            <a class="nav-link text-white" href="<?= base_url('index.php/produits/lister_prd') ?>">
-                <i class="fas fa-fw fa-box me-1" aria-hidden="true"></i>
-                Gestion des produits
+        <li>
+            <a class="site-nav-link" href="<?= base_url('index.php/produits/lister_prd') ?>">
+                <i class="fas fa-box" aria-hidden="true"></i>
+                Produits
             </a>
         </li>
-
-        <li class="nav-item mx-2">
-            <a class="nav-link text-white" href="<?= base_url('index.php/compte/deconnecter') ?>">
-                <i class="fas fa-fw fa-sign-out-alt me-1" aria-hidden="true"></i>
+        <li>
+            <a class="site-nav-link is-logout" href="<?= base_url('index.php/compte/deconnecter') ?>">
+                <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                 Déconnexion
             </a>
         </li>

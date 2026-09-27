@@ -23,6 +23,6 @@
 
     <!-- Custom styles for this template-->
     <link rel="stylesheet" href="<?= base_url('css/dash.css') ?>" />
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= base_url('css/theme.css') ?>" />
 
 </head>

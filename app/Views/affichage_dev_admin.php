@@ -1,205 +1,216 @@
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap');
-  :root {
-    --c-ink: #1a1a2e;
-    --c-surface: #f7f5f0;
-    --c-card: #ffffff;
-    --c-accent: #3B6D11;
-    --c-accent-light: #EAF3DE;
-    --c-accent-mid: #639922;
-    --c-muted: #888780;
-    --c-border: rgba(0,0,0,0.1);
-    --c-pending: #BA7517;
-    --c-pending-bg: #FAEEDA;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--c-surface); color: var(--c-ink); padding: 2rem; }
-  h2 { font-family: 'DM Serif Display', serif; font-size: 2rem; font-weight: 400; color: var(--c-ink); letter-spacing: -0.02em; margin-bottom: 0.25rem; }
-  h3 { font-family: 'DM Serif Display', serif; font-size: 1.3rem; font-weight: 400; margin-bottom: 1.25rem; color: var(--c-ink); }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead { background: var(--c-surface); }
-  th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--c-muted); border-bottom: 0.5px solid var(--c-border); }
-  td { padding: 12px 16px; border-bottom: 0.5px solid var(--c-border); color: var(--c-ink); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: var(--c-surface); }
-  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
-  .badge-pending { background: var(--c-pending-bg); color: var(--c-pending); }
-  .badge-valid { background: var(--c-accent-light); color: var(--c-accent); }
-  .btn-valider { font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 500; background: var(--c-ink); color: #fff; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; transition: opacity 0.15s; }
-  .btn-valider:hover { opacity: 0.75; }
-  .validated-text { font-size: 12px; color: var(--c-accent); font-weight: 500; }
-  .amount { font-weight: 500; }
-  label { display: block; font-size: 12px; font-weight: 500; color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
-  input[type="number"], select {
-    width: 100%; padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 14px;
-    background: var(--c-surface); border: 0.5px solid var(--c-border); border-radius: 7px;
-    color: var(--c-ink); outline: none; transition: border-color 0.15s; appearance: none;
-  }
-  input[type="number"]:focus, select:focus { border-color: var(--c-accent-mid); }
-  hr { border: none; border-top: 0.5px solid var(--c-border); margin: 2rem 0; }
+<div class="page">
 
-  /* Tarif block */
-  .tarif-block {
-    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-    background: var(--c-card); border: 0.5px solid var(--c-border);
-    border-radius: 10px; padding: 1rem 1.25rem; max-width: 380px; margin-bottom: 2rem;
-  }
-  .tarif-block label { margin-bottom: 0; white-space: nowrap; }
-  .tarif-block input[type="number"] { width: 110px; padding: 6px 10px; font-size: 13px; }
+    <header class="page-header">
+        <h1 class="page-title"><?= esc($titre) ?></h1>
+        <p class="page-subtitle"><?= count($dev) ?> devis — du plus récent au plus ancien</p>
+    </header>
 
-  /* Boutons inline */
-  .btn-small {
-    font-size: 11px; font-family: 'DM Sans', sans-serif; font-weight: 500;
-    background: var(--c-accent); color: #fff; border: none;
-    padding: 5px 11px; border-radius: 5px; cursor: pointer; white-space: nowrap;
-  }
-  .btn-small:hover { opacity: 0.8; }
-
-  /* Montant inline */
-  .montant-form { display: flex; align-items: center; gap: 6px; }
-  .montant-form input[type="number"] { width: 90px; padding: 5px 8px; font-size: 13px; }
-</style>
-
-<h2><?= esc($titre) ?></h2>
-<br>
-
-<?php if (empty($dev)) : ?>
-    <p>Aucun devis trouvé.</p>
-<?php else : ?>
-    <table>
-        <thead>
-            <tr>
-                <th>Client</th>
-                <th>Produits</th>
-                <th>Distance</th>
-                <th>Main d'œuvre</th>
-                <th>Total HT</th>
-                <th>TVA</th>
-                <th>Total TTC</th>
-                <th>État</th>
-                <th>Date création</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($dev as $d) : ?>
-                <tr>
-                    <td>
-                        <?= esc($d['cli_nom'] ?? '—') ?>
-                        <?php if (! empty($d['cli_telephone'])) : ?>
-                            <br><small><?= esc($d['cli_telephone']) ?></small>
-                        <?php endif; ?>
-                    </td>
-                    <td><?= esc($d['produits'] ?? '—') ?></td>
-                    <td><?= $d['dev_distance'] !== null ? esc($d['dev_distance']) . ' km' : '—' ?></td>
-                    <td>
-                        <form method="post" action="<?= base_url('devis/modifier_main_oeuvre/' . $d['dev_id']) ?>" style="display:inline">
-                            <input type="number" step="0.01" name="dev_main_oeuvre" value="<?= esc($d['dev_main_oeuvre']) ?>" style="width:90px">
-                            <button class="btn-submit" type="submit">✔</button>
-                        </form>
-                    </td>
-                    <td><?= esc($d['dev_total_ht']) ?> TND</td>
-                    <td><?= esc($d['dev_tva']) ?> TND</td>
-                    <td class="amount"><strong><?= esc($d['dev_total_ttc']) ?> TND</strong></td>
-                    <td>
-                        <?php if ($d['dev_etat'] == 'P') : ?>
-                            <span class="badge badge-pending">⏳ En attente</span>
-                        <?php else : ?>
-                            <span class="badge badge-valid">✔ Validé</span>
-                        <?php endif; ?>
-                    </td>
-                    <td><?= esc($d['dev_date_creation']) ?></td>
-                    <td>
-                        <?php if ($d['dev_etat'] == 'P') : ?>
-                            <a href="<?= base_url('/devis/valider/' . $d['dev_id']) ?>" class="btn-submit">Valider</a>
-                        <?php endif; ?>
-                        <a href="<?= base_url('/devis/supprimer/' . $d['dev_id']) ?>"
-                           onclick="return confirm('Tu es sûr de vouloir supprimer ce devis ?');"
-                           class="btn-delete">
-                            Supprimer
-                        </a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-<?php endif; ?>
-
-<hr>
-
-<h3>Créer un devis</h3>
-<form method="post" action="<?= base_url('devis/creer') ?>" id="form-devis">
-
-    <label>Client :</label>
-    <select name="cli_id" id="cli_id">
-        <option value="">-- Nouveau client --</option>
-        <?php foreach ($clients as $c) : ?>
-            <option value="<?= esc($c['cli_id']) ?>"><?= esc($c['cli_nom']) ?> (<?= esc($c['cli_telephone']) ?>)</option>
-        <?php endforeach; ?>
-    </select>
-
-    <div id="nouveau-client">
-        <label>Nom du client :</label>
-        <input type="text" name="cli_nom" placeholder="Nom / société">
-
-        <label>Téléphone :</label>
-        <input type="text" name="cli_telephone" placeholder="Téléphone">
-
-        <label>Email :</label>
-        <input type="email" name="cli_email" placeholder="Email">
-
-        <label>Adresse :</label>
-        <input type="text" name="cli_adresse" placeholder="Adresse">
-
-        <label>Région :</label>
-        <input type="text" name="cli_region" placeholder="Région">
-    </div>
-
-    <br><br>
-    <label>Distance (km) :</label>
-    <input type="number" step="0.01" name="dev_distance">
-
-    <label>Main d'œuvre (TND) :</label>
-    <input type="number" step="0.01" name="dev_main_oeuvre" value="0">
-
-    <hr>
-    <h4>Produits</h4>
-    <div id="lignes-produits">
-        <div class="ligne-produit">
-            <select name="prd_id[]">
-                <option value="">-- Choisir un produit --</option>
-                <?php foreach ($produits as $p) : ?>
-                    <option value="<?= esc($p['prd_id']) ?>">
-                        <?= esc($p['prd_nom']) ?> — <?= esc($p['prd_marque']) ?> (<?= esc($p['prd_prix']) ?> TND)
-                    </option>
-                <?php endforeach; ?>
-            </select>
-            <input type="number" name="det_quantite[]" min="1" value="1" style="width:70px">
+    <?php if (empty($dev)) : ?>
+        <div class="empty-state">
+            <p>Aucun devis pour le moment. Créez le premier ci-dessous.</p>
         </div>
-    </div>
-    <button type="button" id="ajouter-ligne">+ Ajouter un produit</button>
+    <?php else : ?>
+        <div class="table-wrap">
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Produits</th>
+                            <th>Distance</th>
+                            <th>Main d'œuvre</th>
+                            <th>Total HT</th>
+                            <th>TVA</th>
+                            <th>Total TTC</th>
+                            <th>État</th>
+                            <th>Date création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($dev as $d) : ?>
+                            <tr>
+                                <td>
+                                    <?= esc($d['cli_nom'] ?? '—') ?>
+                                    <?php if (! empty($d['cli_telephone'])) : ?>
+                                        <span class="cell-sub"><?= esc($d['cli_telephone']) ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= esc($d['produits'] ?? '—') ?></td>
+                                <td><?= $d['dev_distance'] !== null ? esc($d['dev_distance']) . ' km' : '—' ?></td>
+                                <td>
+                                    <form method="post"
+                                          action="<?= base_url('devis/modifier_main_oeuvre/' . $d['dev_id']) ?>"
+                                          class="row-actions">
+                                        <input type="number" step="0.01" min="0" class="input-sm"
+                                               name="dev_main_oeuvre" value="<?= esc($d['dev_main_oeuvre']) ?>"
+                                               aria-label="Main d'oeuvre">
+                                        <button class="btn btn-ghost btn-icon" type="submit" title="Enregistrer">&check;</button>
+                                    </form>
+                                </td>
+                                <td><?= esc($d['dev_total_ht']) ?> TND</td>
+                                <td><?= esc($d['dev_tva']) ?> TND</td>
+                                <td class="amount"><?= esc($d['dev_total_ttc']) ?> TND</td>
+                                <td>
+                                    <?php if ($d['dev_etat'] == 'P') : ?>
+                                        <span class="badge badge-pending">En attente</span>
+                                    <?php else : ?>
+                                        <span class="badge badge-valid">Validé</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= esc($d['dev_date_creation']) ?></td>
+                                <td>
+                                    <div class="row-actions">
+                                        <?php if ($d['dev_etat'] == 'P') : ?>
+                                            <a href="<?= base_url('devis/valider/' . $d['dev_id']) ?>" class="btn btn-accent btn-sm">
+                                                Valider
+                                            </a>
+                                        <?php endif; ?>
+                                        <a href="<?= base_url('devis/supprimer/' . $d['dev_id']) ?>"
+                                           class="btn btn-danger btn-sm"
+                                           onclick="return confirm('Supprimer définitivement ce devis ?');">
+                                            Supprimer
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <?php endif; ?>
 
-    <br><br>
-    <button class="btn-submit" type="submit">Créer le devis</button>
-</form>
+    <section class="card">
+        <h2 class="section-title">Créer un devis</h2>
+
+        <form method="post" action="<?= base_url('devis/creer') ?>" id="form-devis">
+
+            <div class="field">
+                <label for="cli_id">Client</label>
+                <select name="cli_id" id="cli_id">
+                    <option value="">— Nouveau client —</option>
+                    <?php foreach ($clients as $c) : ?>
+                        <option value="<?= esc($c['cli_id']) ?>">
+                            <?= esc($c['cli_nom']) ?> (<?= esc($c['cli_telephone']) ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div id="nouveau-client" hidden>
+                <div class="field-grid">
+                    <div class="field">
+                        <label for="cli_nom">Nom du client</label>
+                        <input type="text" id="cli_nom" name="cli_nom" placeholder="Nom ou société" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="cli_telephone">Téléphone</label>
+                        <input type="tel" id="cli_telephone" name="cli_telephone" placeholder="06 00 00 00 00" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="cli_email">Email</label>
+                        <input type="email" id="cli_email" name="cli_email" placeholder="contact@exemple.tn" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="cli_region">Région</label>
+                        <input type="text" id="cli_region" name="cli_region" placeholder="Tunis, Sousse…" autocomplete="off">
+                    </div>
+                </div>
+                <div class="field" style="margin-top:1.1rem">
+                    <label for="cli_adresse">Adresse</label>
+                    <input type="text" id="cli_adresse" name="cli_adresse" placeholder="Adresse complète" autocomplete="off">
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <div class="field-grid">
+                <div class="field">
+                    <label for="dev_distance">Distance (km)</label>
+                    <input type="number" step="0.01" min="0" id="dev_distance" name="dev_distance" placeholder="0.00">
+                </div>
+                <div class="field">
+                    <label for="dev_main_oeuvre">Main d'œuvre (TND)</label>
+                    <input type="number" step="0.01" min="0" id="dev_main_oeuvre" name="dev_main_oeuvre" value="0">
+                </div>
+            </div>
+
+            <hr class="divider">
+
+            <h3 class="section-title">Produits</h3>
+            <div id="lignes-produits">
+                <div class="product-line ligne-produit">
+                    <select name="prd_id[]" aria-label="Produit">
+                        <option value="">— Choisir un produit —</option>
+                        <?php foreach ($produits as $p) : ?>
+                            <option value="<?= esc($p['prd_id']) ?>">
+                                <?= esc($p['prd_nom']) ?> — <?= esc($p['prd_marque']) ?> (<?= esc($p['prd_prix']) ?> TND)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <input type="number" class="input-qty" name="det_quantite[]" min="1" value="1" aria-label="Quantité">
+                    <button type="button" class="btn btn-ghost btn-icon btn-remove" aria-label="Retirer la ligne">&times;</button>
+                </div>
+            </div>
+
+            <button type="button" id="ajouter-ligne" class="btn btn-add-line">+ Ajouter un produit</button>
+
+            <hr class="divider">
+
+            <button class="btn btn-primary btn-block" type="submit">Créer le devis</button>
+        </form>
+    </section>
+
+</div>
 
 <script>
-document.getElementById('ajouter-ligne').addEventListener('click', function () {
-    const conteneur = document.getElementById('lignes-produits');
-    const ligne = conteneur.querySelector('.ligne-produit').cloneNode(true);
-    ligne.querySelectorAll('select, input').forEach(el => {
-        if (el.tagName === 'SELECT') el.selectedIndex = 0;
-        if (el.tagName === 'INPUT') el.value = 1;
-    });
-    conteneur.appendChild(ligne);
-});
+    const lignes = document.getElementById('lignes-produits');
 
-// Masque le formulaire "nouveau client" si un client existant est choisi
-const selectClient = document.getElementById('cli_id');
-const blocNouveauClient = document.getElementById('nouveau-client');
-function toggleNouveauClient() {
-    blocNouveauClient.style.display = selectClient.value ? 'none' : 'block';
-}
-selectClient.addEventListener('change', toggleNouveauClient);
-toggleNouveauClient();
+    // Empêche l'envoi si une ligne de produit est laissée vide.
+    document.getElementById('form-devis').addEventListener('submit', function (e) {
+        const incompletes = [...lignes.querySelectorAll('select')]
+            .filter(s => !s.value);
+        if (incompletes.length) {
+            e.preventDefault();
+            incompletes[0].focus();
+            alert('Sélectionnez un produit pour chaque ligne, ou retirez les lignes vides.');
+        }
+    });
+
+    document.getElementById('ajouter-ligne').addEventListener('click', function () {
+        const ligne = lignes.querySelector('.ligne-produit').cloneNode(true);
+        ligne.querySelectorAll('select, input').forEach(el => {
+            if (el.tagName === 'SELECT') {
+                el.selectedIndex = 0;
+            } else {
+                el.value = 1;
+            }
+        });
+        lignes.appendChild(ligne);
+    });
+
+    // Suppression d'une ligne (on garde toujours au moins une ligne).
+    lignes.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-remove');
+        if (!btn) return;
+        const toutes = lignes.querySelectorAll('.ligne-produit');
+        if (toutes.length === 1) {
+            btn.closest('.ligne-produit').querySelectorAll('select, input')
+                .forEach(el => el.tagName === 'SELECT' ? el.selectedIndex = 0 : el.value = 1);
+            return;
+        }
+        btn.closest('.ligne-produit').remove();
+    });
+
+    // Affiche le bloc "nouveau client" uniquement quand aucun client existant n'est choisi.
+    const selectClient = document.getElementById('cli_id');
+    const blocNouveauClient = document.getElementById('nouveau-client');
+
+    function toggleNouveauClient() {
+        blocNouveauClient.hidden = !!selectClient.value;
+    }
+
+    selectClient.addEventListener('change', toggleNouveauClient);
+    toggleNouveauClient();
 </script>
