@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title><?= $pageTitle ?? 'Sécurité électronique & solutions connectées' ?></title>
+    <title><?= esc($pageTitle ?? $titre ?? 'Sécurité électronique & solutions connectées') ?></title>
 
     <meta
         name="description"
@@ -12,9 +12,7 @@
     >
 
     <link rel="stylesheet" href="<?= base_url('client/style.css') ?>">
-    <script>
-    console.log("CSS URL :", "<?= base_url('client/style.css') ?>");
-</script>
+    <link rel="stylesheet" href="<?= base_url('css/auth.css') ?>">
 </head>
   <body>
 
