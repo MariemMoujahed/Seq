@@ -103,10 +103,10 @@ textarea::placeholder {
                     <td><?= esc($d['cli_nom'] ?? '—') ?></td>
                     <td><?= esc($d['produits'] ?? '—') ?></td>
                     <td><?= $d['dev_distance'] !== null ? esc($d['dev_distance']) . ' km' : '—' ?></td>
-                    <td><?= esc($d['dev_main_oeuvre']) ?> €</td>
-                    <td><?= esc($d['dev_total_ht']) ?> €</td>
-                    <td><?= esc($d['dev_tva']) ?> €</td>
-                    <td class="amount"><strong><?= esc($d['dev_total_ttc']) ?> €</strong></td>
+                    <td><?= esc($d['dev_main_oeuvre']) ?> TND</td>
+                    <td><?= esc($d['dev_total_ht']) ?> TND</td>
+                    <td><?= esc($d['dev_tva']) ?> TND</td>
+                    <td class="amount"><strong><?= esc($d['dev_total_ttc']) ?> TND</strong></td>
                     <td>
                         <?php if ($d['dev_etat'] == 'P') : ?>
                             <span class="badge badge-pending">⏳ En attente</span>
@@ -155,7 +155,7 @@ textarea::placeholder {
     <label>Distance (km) :</label>
     <input type="number" step="0.01" name="dev_distance">
 
-    <label>Main d'œuvre (€) :</label>
+    <label>Main d'œuvre (TND) :</label>
     <input type="number" step="0.01" name="dev_main_oeuvre" value="0">
 
     <hr>
@@ -166,7 +166,7 @@ textarea::placeholder {
                 <option value="">-- Choisir un produit --</option>
                 <?php foreach ($produits as $p) : ?>
                     <option value="<?= esc($p['prd_id']) ?>">
-                        <?= esc($p['prd_nom']) ?> — <?= esc($p['prd_marque']) ?> (<?= esc($p['prd_prix']) ?> €)
+                        <?= esc($p['prd_nom']) ?> — <?= esc($p['prd_marque']) ?> (<?= esc($p['prd_prix']) ?> TND)
                     </option>
                 <?php endforeach; ?>
             </select>
