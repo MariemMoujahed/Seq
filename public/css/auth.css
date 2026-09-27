@@ -39,45 +39,8 @@
     }
 }
 
-/* ---------- En-tête ---------- */
-
-.auth-head {
-    padding: 2.25rem 2.25rem 1.75rem;
-    border-bottom: 1px solid rgba(255, 255, 255, .07);
-}
-
-.auth-tag {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: .16em;
-    text-transform: uppercase;
-    color: var(--orange, #ff6500);
-    background: rgba(255, 101, 0, .1);
-    border: 1px solid rgba(255, 101, 0, .28);
-    border-radius: 999px;
-    padding: .3rem .7rem;
-    margin-bottom: 1rem;
-}
-
-.auth-title {
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: -.02em;
-    line-height: 1.2;
-    color: #f5f7f8;
-    margin: 0 0 .5rem;
-}
-
-.auth-lead {
-    font-size: .875rem;
-    line-height: 1.6;
-    color: var(--gray, #9ba3aa);
-    margin: 0;
-}
-
 .auth-body {
-    padding: 1.75rem 2.25rem 2.25rem;
+    padding: 1.85rem 2.25rem 2.25rem;
 }
 
 /* ---------- Champs ---------- */
@@ -294,16 +257,8 @@
         border-radius: 12px;
     }
 
-    .auth-head {
-        padding: 1.75rem 1.4rem 1.4rem;
-    }
-
     .auth-body {
-        padding: 1.4rem;
-    }
-
-    .auth-title {
-        font-size: 1.4rem;
+        padding: 1.5rem 1.4rem 1.6rem;
     }
 
     /* Les champs empilés passent sur une seule colonne */

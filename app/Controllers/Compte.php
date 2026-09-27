@@ -108,8 +108,7 @@ class Compte extends BaseController
         . view('templates/bas');
         }
         // L’utilisateur veut afficher le formulaire pour créer un compte
-            return view('menu/menu_visiteur')
-            . view('templates/haut', ['titre' => 'Créer un compte'])
+            return view('templates/haut', ['titre' => 'Créer un compte'])
             . view('compte/compte_creer',)
             . view('templates/bas');
         }
@@ -120,7 +119,6 @@ class Compte extends BaseController
 
                 if ($this->request->getMethod() !== 'POST') {
                     return view('templates/haut', ['titre' => 'Se connecter'])
-                        . view('menu/menu_visiteur')
                         . view('connexion/compte_connecter')
                         . view('templates/bas');
                 }
@@ -142,7 +140,6 @@ class Compte extends BaseController
                 ]
             ])) {
                     return view('templates/haut', ['titre' => 'Se connecter'])
-                        . view('menu/menu_visiteur')
                         . view('connexion/compte_connecter')
                         . view('templates/bas');
                 }
@@ -176,7 +173,6 @@ class Compte extends BaseController
                 }
 
                 return view('templates/haut', ['titre' => 'Se connecter'])
-                    . view('menu/menu_visiteur')
                     . view('connexion/compte_connecter', ['error' => 'Identifiant ou mot de passe incorrect'])
                     . view('templates/bas');
             }
@@ -188,7 +184,6 @@ class Compte extends BaseController
                 $session=session();
                 $session->destroy();
                 return view('templates/haut', ['titre' => 'Se connecter'])
-                . view('menu/menu_visiteur')
                 . view('connexion/compte_connecter')
                 . view('templates/bas');
             }

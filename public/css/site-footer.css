@@ -1,0 +1,170 @@
+/* ============================================
+   PIED DE PAGE — Speedy Ideal Security
+   Coordonnées de contact de la société.
+   Chargé par templates/haut.php (toutes les pages
+   publiques : accueil, connexion, inscription,
+   contact, suivi de demande).
+   ============================================ */
+
+.site-footer {
+    margin-top: auto;
+    background: #050608;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    color: #9ba3aa;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.site-footer__inner {
+    width: min(1200px, calc(100% - 40px));
+    margin: auto;
+    padding: 2.5rem 0 2rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2.5rem 3rem;
+    flex-wrap: wrap;
+}
+
+/* ---------- Identité ---------- */
+
+.site-footer__brand {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    max-width: 34ch;
+}
+
+.site-footer__name {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #f5f7f8;
+    line-height: 1.35;
+}
+
+.site-footer__tagline {
+    font-size: 12px;
+    color: #606870;
+}
+
+/* ---------- Coordonnées ---------- */
+
+.site-footer__contact {
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.site-footer__contact li {
+    display: flex;
+    align-items: flex-start;
+    gap: .65rem;
+    font-size: 13.5px;
+}
+
+.site-footer__contact i {
+    /* Aligne l'icône sur la première ligne du texte */
+    margin-top: .28rem;
+    width: 1rem;
+    flex-shrink: 0;
+    text-align: center;
+    font-size: .8rem;
+    color: #ff6500;
+}
+
+.site-footer__contact a {
+    color: #dfe3e6;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color .15s, border-color .15s;
+}
+
+.site-footer__contact a:hover {
+    color: #ff6500;
+    border-bottom-color: rgba(255, 101, 0, .5);
+}
+
+.site-footer__contact a:focus-visible {
+    outline: 2px solid #ff8a2a;
+    outline-offset: 3px;
+    border-radius: 2px;
+}
+
+.site-footer__contact span {
+    color: #9ba3aa;
+}
+
+/* ---------- Bas de page ---------- */
+
+.site-footer__bottom {
+    width: min(1200px, calc(100% - 40px));
+    margin: auto;
+    padding: 1.1rem 0 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, .06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #606870;
+}
+
+.site-footer__bottom a {
+    color: #9ba3aa;
+    text-decoration: none;
+    transition: color .15s;
+}
+
+.site-footer__bottom a:hover {
+    color: #ff6500;
+}
+
+/* Sur mobile la page doit rester scrollable jusqu'en bas */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.site-footer {
+    margin-top: auto;
+}
+
+main,
+.auth,
+.form-card-wrapper {
+    flex: 1 0 auto;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 640px) {
+    .site-footer__inner {
+        padding: 2rem 0 1.5rem;
+        flex-direction: column;
+        gap: 1.75rem;
+    }
+
+    .site-footer__brand {
+        max-width: none;
+    }
+
+    .site-footer__bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: .5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .site-footer a {
+        transition: none;
+    }
+}

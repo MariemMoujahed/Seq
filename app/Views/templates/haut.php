@@ -13,6 +13,11 @@
 
     <link rel="stylesheet" href="<?= base_url('client/style.css') ?>">
     <link rel="stylesheet" href="<?= base_url('css/auth.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('css/site-footer.css') ?>">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+          referrerpolicy="no-referrer">
 </head>
   <body>
 

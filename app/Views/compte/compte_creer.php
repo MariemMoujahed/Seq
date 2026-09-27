@@ -1,12 +1,6 @@
 <div class="auth">
     <div class="auth-card auth-card--wide">
 
-        <div class="auth-head">
-            <span class="auth-tag">Inscription</span>
-            <h1 class="auth-title">Créer un compte</h1>
-            <p class="auth-lead">Renseignez vos informations pour rejoindre la plateforme.</p>
-        </div>
-
         <div class="auth-body">
 
             <?php if (session()->getFlashdata('error')) : ?>

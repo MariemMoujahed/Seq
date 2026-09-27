@@ -1,12 +1,6 @@
 <div class="auth">
     <div class="auth-card">
 
-        <div class="auth-head">
-            <span class="auth-tag">Espace sécurisé</span>
-            <h1 class="auth-title">Connexion</h1>
-            <p class="auth-lead">Accédez à votre espace pour gérer vos devis et vos clients.</p>
-        </div>
-
         <div class="auth-body">
 
             <?php if (isset($error)) : ?>
