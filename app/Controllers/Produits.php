@@ -7,52 +7,38 @@ use App\Libraries\CloudinaryService;
 
 class Produits extends BaseController
 {
-    // ---------------------------------------------------------
-    // LISTE + FORMULAIRE D'AJOUT
-    // ---------------------------------------------------------
-
+    /**
+     * Liste des produits - admin only
+     */
     public function lister_prd()
     {
-        $session = session();
-        if (! $session->has('user')) {
-            return redirect()->to('/connexion');
+        $redirect = $this->requireAdmin();
+        if ($redirect) {
+            return $redirect;
         }
 
-        $pseudo = $session->get('user');
-        $model  = model(Db_model::class);
-        $role   = $model->get_role_by_pseudo($pseudo);
+        $model = model(Db_model::class);
 
-        // Seul l'administrateur gère le catalogue produits
-        if (! $role || $role['cpt_role'] !== 'A') {
-            return redirect()->to('/devis/lister_dev');
-        }
+        $data = [
+            'titre'    => 'Gestion des produits',
+            'produits' => $model->get_produits(),
+        ];
 
-        $data['titre']    = "Gestion des produits";
-        $data['produits'] = $model->get_produits();
-
-        return view('templates/haut2', $data)
-            . view('menu/menu_administrateur')
-            . view('affichage_produits', $data)
-            . view('templates/bas2');
+        return $this->renderAuthView('affichage_produits', $data);
     }
 
-    // ---------------------------------------------------------
-    // AJOUT
-    // ---------------------------------------------------------
-
+    /**
+     * Ajouter un produit - admin only
+     */
     public function ajouter()
     {
-        $session = session();
-        if (! $session->has('user')) {
-            return redirect()->to('/connexion');
+        $redirect = $this->requireAdmin();
+        if ($redirect) {
+            return $redirect;
         }
 
-        $pseudo = $session->get('user');
-        $model  = model(Db_model::class);
-        $role   = $model->get_role_by_pseudo($pseudo);
-
-        if (! $role || $role['cpt_role'] !== 'A') {
-            return redirect()->to('/devis/lister_dev');
+        if ($this->request->getMethod() !== 'POST') {
+            return redirect()->to('/produits/lister_prd');
         }
 
         $nom       = trim((string) $this->request->getPost('prd_nom'));
@@ -90,7 +76,6 @@ class Produits extends BaseController
                 $imagePublicId = $televersee['public_id'];
             } catch (\Throwable $e) {
                 log_message('error', 'Cloudinary upload failed: {msg}', ['msg' => $e->getMessage()]);
-
                 return redirect()->to('/produits/lister_prd')
                     ->with('error', "Le produit n'a pas été enregistré : l'envoi de l'image a échoué.");
             }
@@ -109,23 +94,18 @@ class Produits extends BaseController
         return redirect()->to('/produits/lister_prd')->with('success', 'Produit ajouté.');
     }
 
-    // ---------------------------------------------------------
-    // MODIFICATION RAPIDE (prix / stock)
-    // ---------------------------------------------------------
-
+    /**
+     * Modifier produit (prix / stock / image) - admin only
+     */
     public function modifier($id)
     {
-        $session = session();
-        if (! $session->has('user')) {
-            return redirect()->to('/connexion');
+        $redirect = $this->requireAdmin();
+        if ($redirect) {
+            return $redirect;
         }
 
-        $pseudo = $session->get('user');
-        $model  = model(Db_model::class);
-        $role   = $model->get_role_by_pseudo($pseudo);
-
-        if (! $role || $role['cpt_role'] !== 'A') {
-            return redirect()->to('/devis/lister_dev');
+        if ($this->request->getMethod() !== 'POST') {
+            return redirect()->to('/produits/lister_prd');
         }
 
         $prix  = (float) $this->request->getPost('prd_prix');
@@ -152,14 +132,12 @@ class Produits extends BaseController
 
             try {
                 // On réutilise le même public_id : Cloudinary écrase l'ancien
-                // fichier au lieu d'en créer un second.
                 $televersee = CloudinaryService::upload($file->getTempName(), (string) $ancien);
 
                 $champs['prd_image']    = $televersee['url'];
                 $champs['prd_image_id'] = $televersee['public_id'];
             } catch (\Throwable $e) {
                 log_message('error', 'Cloudinary replace failed: {msg}', ['msg' => $e->getMessage()]);
-
                 return redirect()->to('/produits/lister_prd')
                     ->with('error', "Le prix et le stock n'ont pas été enregistrés : l'envoi de l'image a échoué.");
             }
@@ -172,36 +150,26 @@ class Produits extends BaseController
         return redirect()->to('/produits/lister_prd')->with('success', 'Produit mis à jour.');
     }
 
-    // ---------------------------------------------------------
-    // SUPPRESSION
-    // ---------------------------------------------------------
-
+    /**
+     * Supprimer produit - admin only
+     */
     public function supprimer($id)
     {
-        $session = session();
-        if (! $session->has('user')) {
-            return redirect()->to('/connexion');
-        }
-
-        $pseudo = $session->get('user');
-        $model  = model(Db_model::class);
-        $role   = $model->get_role_by_pseudo($pseudo);
-
-        if (! $role || $role['cpt_role'] !== 'A') {
-            return redirect()->to('/devis/lister_dev');
+        $redirect = $this->requireAdmin();
+        if ($redirect) {
+            return $redirect;
         }
 
         $db = \Config\Database::connect();
 
         // Un produit référencé dans t_detail_det ne peut pas être supprimé
-        // (contrainte de clé étrangère) : on bloque proprement avant l'erreur SQL.
         $utilise = $db->table('t_detail_det')->where('prd_id', (int) $id)->countAllResults();
         if ($utilise > 0) {
             return redirect()->to('/produits/lister_prd')
                 ->with('error', "Ce produit est utilisé dans $utilise devis et ne peut pas être supprimé.");
         }
 
-        // Libère l'espace Cloudinary associé avant de perdre la référence.
+        // Libère l'espace Cloudinary
         $imageId = $db->table('t_produit_prd')->where('prd_id', (int) $id)->get()->getRowArray()['prd_image_id'] ?? null;
         CloudinaryService::destroy($imageId);
 

@@ -118,14 +118,14 @@
               <tbody>
                 <?php foreach ($recent_devis as $devis): ?>
                 <tr>
-                  <td><strong><?= esc($devis['dev_reference']) ?></strong></td>
+                  <td><strong>#<?= esc($devis['dev_id']) ?></strong></td>
                   <td>
                     <?= esc($devis['dev_client_nom'] ?? '—') ?>
                     <?php if (!empty($devis['dev_client_email'])): ?>
                       <span class="cell-sub"><?= esc($devis['dev_client_email']) ?></span>
                     <?php endif; ?>
                   </td>
-                  <td><?= date('d/m/Y', strtotime($devis['dev_date'])) ?></td>
+                  <td><?= date('d/m/Y', strtotime($devis['dev_date_creation'])) ?></td>
                   <td class="amount"><?= number_format($devis['dev_total_ttc'] ?? 0, 2, ',', ' ') ?> €</td>
                   <td>
                     <span class="badge badge-<?= $devis['dev_statut'] === 'validé' ? 'valid' : 'pending' ?>">

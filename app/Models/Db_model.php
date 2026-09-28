@@ -263,10 +263,10 @@ class Db_model extends Model
             ->getResultArray();
     }
  
-    // ---------------------------------------------------------
+// ---------------------------------------------------------
     // PRODUITS
     // ---------------------------------------------------------
- 
+
     public function get_produits(): array
     {
         $db = \Config\Database::connect();
@@ -276,12 +276,21 @@ class Db_model extends Model
             ->get()
             ->getResultArray();
     }
- 
+
+    public function get_produit_by_id(int $id): ?array
+    {
+        $db = \Config\Database::connect();
+        return $db->table('t_produit_prd')
+            ->where('prd_id', $id)
+            ->get()
+            ->getRowArray();
+    }
+
     // ---------------------------------------------------------
     // DEVIS
     // ---------------------------------------------------------
  
-    /**
+/**
      * Tous les devis, avec infos client + liste des produits agrégée
      * (vue Administrateur / Commercial)
      */
@@ -290,7 +299,7 @@ class Db_model extends Model
         $db = \Config\Database::connect();
         $builder = $db->table('t_devis_dev dv');
         $builder->select(
-            "dv.*, cl.cli_nom, cl.cli_telephone, cl.cli_email, cl.cli_region,
+            "dv.*, dv.dev_etat as dev_statut, cl.cli_nom, cl.cli_telephone, cl.cli_email, cl.cli_region,
              GROUP_CONCAT(CONCAT(p.prd_nom, ' x', d.det_quantite) SEPARATOR ', ') AS produits"
         );
         $builder->join('t_client_cli cl', 'cl.cli_id = dv.cli_id', 'left');
@@ -298,31 +307,10 @@ class Db_model extends Model
         $builder->join('t_produit_prd p', 'p.prd_id = d.prd_id', 'left');
         $builder->groupBy('dv.dev_id');
         $builder->orderBy('dv.dev_date_creation', 'DESC');
- 
+
         return $builder->get()->getResultArray();
     }
- 
-    /**
-     * Devis créés par un utilisateur donné (vue Commercial / Technicien)
-     */
-    public function get_dev_by_user(string $pseudo): array
-    {
-        $db = \Config\Database::connect();
-        $builder = $db->table('t_devis_dev dv');
-        $builder->select(
-            "dv.*, cl.cli_nom, cl.cli_telephone, cl.cli_email, cl.cli_region,
-             GROUP_CONCAT(CONCAT(p.prd_nom, ' x', d.det_quantite) SEPARATOR ', ') AS produits"
-        );
-        $builder->join('t_client_cli cl', 'cl.cli_id = dv.cli_id', 'left');
-        $builder->join('t_detail_det d', 'd.dev_id = dv.dev_id', 'left');
-        $builder->join('t_produit_prd p', 'p.prd_id = d.prd_id', 'left');
-        $builder->where('dv.cpt_pseudo', $pseudo);
-        $builder->groupBy('dv.dev_id');
-        $builder->orderBy('dv.dev_date_creation', 'DESC');
- 
-        return $builder->get()->getResultArray();
-    }
- 
+
     /**
      * Somme des lignes de détail (produits) d'un devis, hors main d'œuvre
      */

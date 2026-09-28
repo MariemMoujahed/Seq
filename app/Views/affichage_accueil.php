@@ -55,298 +55,159 @@
   </div>
 
 
-  <div class="services-grid reveal">
-
+  <div class="services-grid reveal" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
 
     <!-- 01 — VIDÉOSURVEILLANCE -->
-
-    <div class="service-card">
-
-      <svg
-        class="service-icon"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M15.75 10.5l4.72-2.36A1 1 0 0122 9.03v5.94a1 1 0 01-1.53.85l-4.72-2.36M4.5 19.5h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0013.5 6h-9a2.25 2.25 0 00-2.25 2.25v9A2.25 2.25 0 004.5 19.5z"
-        />
-      </svg>
-
-      <h3>
-        Caméras de surveillance
-      </h3>
-
-      <p>
-        Installation de systèmes de vidéosurveillance adaptés à vos locaux
-        afin de surveiller efficacement vos espaces et renforcer leur sécurité.
-      </p>
-
-    </div>
-
+    <article class="service-card" style="position: relative; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--radius); overflow: hidden; transition: all .3s ease;">
+        <div class="service-card-image" style="aspect-ratio: 4/3; background: linear-gradient(135deg, var(--c-accent-light), var(--c-surface)); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+            <svg class="service-icon-large" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="width: 64px; height: 64px; color: var(--c-accent); opacity: 0.15; transition: all .3s ease;" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-2.36A1 1 0 0122 9.03v5.94a1 1 0 01-1.53.85l-4.72-2.36M4.5 19.5h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0013.5 6h-9a2.25 2.25 0 00-2.25 2.25v9A2.25 2.25 0 004.5 19.5z" />
+            </svg>
+            <span class="service-category-tag" style="position: absolute; top: .75rem; left: .75rem; background: var(--c-accent); color: white; padding: .25rem .6rem; border-radius: 999px; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;">Sécurité</span>
+        </div>
+        <div class="service-card-content" style="padding: 1.25rem;">
+            <h3 style="font-family: 'DM Serif Display', Georgia, serif; font-size: 1.1rem; font-weight: 400; color: var(--c-ink); margin-bottom: .5rem;">Caméras de surveillance</h3>
+            <p style="color: var(--c-muted); line-height: 1.55; margin: 0 0 1rem; font-size: .9rem;">Installation de systèmes de vidéosurveillance adaptés à vos locaux afin de surveiller efficacement vos espaces et renforcer leur sécurité.</p>
+            <a href="<?= base_url('catalogue/categorie/Vid%C3%A9osurveillance') ?>" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .9rem; font-size: .825rem;">En savoir plus <i class="fas fa-arrow-right" aria-hidden="true" style="font-size: .75rem;"></i></a>
+        </div>
+    </article>
 
     <!-- 02 — INTERPHONES -->
-
-    <div class="service-card">
-
-      <svg
-        class="service-icon"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M15.75 6.75h.008v.008h-.008V6.75zM18 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75z"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M7.5 8.25h.008v.008H7.5V8.25zM7.5 12h.008v.008H7.5V12zM7.5 15.75h.008v.008H7.5v-.008z"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M11.25 8.25h5.25M11.25 12h5.25M11.25 15.75h5.25"
-        />
-      </svg>
-
-      <h3>
-        Interphones & vidéophones
-      </h3>
-
-      <p>
-        Installation d'interphones et de vidéophones permettant d'identifier
-        les visiteurs et de contrôler les accès à votre bâtiment.
-      </p>
-
-    </div>
-
+    <article class="service-card" style="position: relative; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--radius); overflow: hidden; transition: all .3s ease;">
+        <div class="service-card-image" style="aspect-ratio: 4/3; background: linear-gradient(135deg, #e8f0e8, var(--c-surface)); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+            <svg class="service-icon-large" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="width: 64px; height: 64px; color: var(--c-accent); opacity: 0.15; transition: all .3s ease;" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6.75h.008v.008h-.008V6.75zM18 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h.008v.008H7.5V8.25zM7.5 12h.008v.008H7.5V12zM7.5 15.75h.008v.008H7.5v-.008z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 8.25h5.25M11.25 12h5.25M11.25 15.75h5.25" />
+            </svg>
+            <span class="service-category-tag" style="position: absolute; top: .75rem; left: .75rem; background: var(--c-accent); color: white; padding: .25rem .6rem; border-radius: 999px; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;">Contrôle d'accès</span>
+        </div>
+        <div class="service-card-content" style="padding: 1.25rem;">
+            <h3 style="font-family: 'DM Serif Display', Georgia, serif; font-size: 1.1rem; font-weight: 400; color: var(--c-ink); margin-bottom: .5rem;">Interphones & vidéophones</h3>
+            <p style="color: var(--c-muted); line-height: 1.55; margin: 0 0 1rem; font-size: .9rem;">Installation d'interphones et de vidéophones permettant d'identifier les visiteurs et de contrôler les accès à votre bâtiment.</p>
+            <a href="<?= base_url('catalogue/categorie/Interphone') ?>" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .9rem; font-size: .825rem;">En savoir plus <i class="fas fa-arrow-right" aria-hidden="true" style="font-size: .75rem;"></i></a>
+        </div>
+    </article>
 
     <!-- 03 — ALARMES -->
+    <article class="service-card" style="position: relative; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--radius); overflow: hidden; transition: all .3s ease;">
+        <div class="service-card-image" style="aspect-ratio: 4/3; background: linear-gradient(135deg, #fef3e8, var(--c-surface)); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+            <svg class="service-icon-large" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="width: 64px; height: 64px; color: var(--c-pending); opacity: 0.15; transition: all .3s ease;" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2.25m0 3.75h.008v.008H12V15z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.34 3.94L2.89 17.19A1.5 1.5 0 004.2 19.5h15.6a1.5 1.5 0 001.31-2.31L13.66 3.94a1.9 1.9 0 00-3.32 0z" />
+            </svg>
+            <span class="service-category-tag" style="position: absolute; top: .75rem; left: .75rem; background: var(--c-pending); color: white; padding: .25rem .6rem; border-radius: 999px; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;">Alarme</span>
+        </div>
+        <div class="service-card-content" style="padding: 1.25rem;">
+            <h3 style="font-family: 'DM Serif Display', Georgia, serif; font-size: 1.1rem; font-weight: 400; color: var(--c-ink); margin-bottom: .5rem;">Alarmes intrusion & incendie</h3>
+            <p style="color: var(--c-muted); line-height: 1.55; margin: 0 0 1rem; font-size: .9rem;">Mise en place de systèmes d'alarme pour détecter les tentatives d'intrusion et prévenir les risques liés aux incendies.</p>
+            <a href="<?= base_url('catalogue/categorie/Alarme') ?>" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .9rem; font-size: .825rem;">En savoir plus <i class="fas fa-arrow-right" aria-hidden="true" style="font-size: .75rem;"></i></a>
+        </div>
+    </article>
 
-    <div class="service-card">
+<!-- 04 — CONTRÔLE D'ACCÈS -->
+    <article class="service-card" style="position: relative; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--radius); overflow: hidden; transition: all .3s ease;">
+        <div class="service-card-image" style="aspect-ratio: 4/3; background: linear-gradient(135deg, #e8eef7, var(--c-surface)); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+            <svg class="service-icon-large" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="width: 64px; height: 64px; color: #36b9cc; opacity: 0.15; transition: all .3s ease;" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 20.25a7.5 7.5 0 0115 0" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25l1.5 1.5 3-3" />
+            </svg>
+            <span class="service-category-tag" style="position: absolute; top: .75rem; left: .75rem; background: #36b9cc; color: white; padding: .25rem .6rem; border-radius: 999px; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;">Accès</span>
+        </div>
+        <div class="service-card-content" style="padding: 1.25rem;">
+            <h3 style="font-family: 'DM Serif Display', Georgia, serif; font-size: 1.1rem; font-weight: 400; color: var(--c-ink); margin-bottom: .5rem;">Contrôle d'accès</h3>
+            <p style="color: var(--c-muted); line-height: 1.55; margin: 0 0 1rem; font-size: .9rem;">Sécurisation et gestion des accès grâce à des solutions adaptées aux entreprises, commerces, immeubles et bâtiments professionnels.</p>
+            <a href="<?= base_url('catalogue/categorie/Contr%C3%B4le') ?>" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .9rem; font-size: .825rem;">En savoir plus <i class="fas fa-arrow-right" aria-hidden="true" style="font-size: .75rem;"></i></a>
+        </div>
+    </article>
 
-      <svg
-        class="service-icon"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M12 9v2.25m0 3.75h.008v.008H12V15z"
-        />
+<!-- 05 — POINTAGE -->
+    <article class="service-card" style="position: relative; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--radius); overflow: hidden; transition: all .3s ease;">
+        <div class="service-card-image" style="aspect-ratio: 4/3; background: linear-gradient(135deg, #f5e8f7, var(--c-surface)); display: flex; align-items: center; justify_content: center; position: relative; overflow: hidden;">
+            <svg class="service-icon-large" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="width: 64px; height: 64px; color: #9f7aea; opacity: 0.15; transition: all .3s ease;" aria-hidden="true">
+                <circle cx="12" cy="12" r="8.25" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5v4.5l3 1.75" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3.75v1.5M20.25 12h-1.5M12 20.25v-1.5M3.75 12h1.5" />
+            </svg>
+            <span class="service-category-tag" style="position: absolute; top: .75rem; left: .75rem; background: #9f7aea; color: white; padding: .25rem .6rem; border-radius: 999px; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;">RH</span>
+        </div>
+        <div class="service-card-content" style="padding: 1.25rem;">
+            <h3 style="font-family: 'DM Serif Display', Georgia, serif; font-size: 1.1rem; font-weight: 400; color: var(--c-ink); margin-bottom: .5rem;">Systèmes de pointage</h3>
+            <p style="color: var(--c-muted); line-height: 1.55; margin: 0 0 1rem; font-size: .9rem;">Installation de solutions de pointage permettant de gérer et suivre efficacement les entrées et sorties du personnel.</p>
+            <a href="<?= base_url('catalogue/categorie/Pointage') ?>" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .9rem; font-size: .825rem;">En savoir plus <i class="fas fa-arrow-right" aria-hidden="true" style="font-size: .75rem;"></i></a>
+        </div>
+    </article>
 
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M10.34 3.94L2.89 17.19A1.5 1.5 0 004.2 19.5h15.6a1.5 1.5 0 001.31-2.31L13.66 3.94a1.9 1.9 0 00-3.32 0z"
-        />
-      </svg>
-
-      <h3>
-        Alarmes intrusion & incendie
-      </h3>
-
-      <p>
-        Mise en place de systèmes d'alarme pour détecter les tentatives
-        d'intrusion et prévenir les risques liés aux incendies.
-      </p>
-
-    </div>
-
-
-    <!-- 04 — CONTRÔLE D'ACCÈS -->
-
-    <div class="service-card">
-
-      <svg
-        class="service-icon"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M15.75 5.25a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M4.5 20.25a7.5 7.5 0 0115 0"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M17.25 8.25l1.5 1.5 3-3"
-        />
-      </svg>
-
-      <h3>
-        Contrôle d'accès
-      </h3>
-
-      <p>
-        Sécurisation et gestion des accès grâce à des solutions adaptées
-        aux entreprises, commerces, immeubles et bâtiments professionnels.
-      </p>
-
-    </div>
-
-
-    <!-- 05 — POINTAGE -->
-
-    <div class="service-card">
-
-      <svg
-        class="service-icon"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="8.25"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M12 7.5v4.5l3 1.75"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M12 3.75v1.5M20.25 12h-1.5M12 20.25v-1.5M3.75 12h1.5"
-        />
-      </svg>
-
-      <h3>
-        Systèmes de pointage
-      </h3>
-
-      <p>
-        Installation de solutions de pointage permettant de gérer et suivre
-        efficacement les entrées et sorties du personnel.
-      </p>
-
-    </div>
-
-
-    <!-- 06 — PORTES AUTOMATIQUES -->
-
-    <div class="service-card">
-
-      <svg
-        class="service-icon"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M5.25 20.25h13.5"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M6.75 20.25V5.5A1.75 1.75 0 018.5 3.75h7A1.75 1.75 0 0117.25 5.5v14.75"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M12 3.75v16.5"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M9.75 12h.008v.008H9.75V12z"
-        />
-      </svg>
-
-      <h3>
-        Portes automatiques
-      </h3>
-
-      <p>
-        Installation de solutions d'ouverture automatique pour améliorer
-        l'accessibilité, le confort et la sécurité de vos espaces.
-      </p>
-
-    </div>
-
+<!-- 06 — PORTES AUTOMATIQUES -->
+    <article class="service-card" style="position: relative; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--radius); overflow: hidden; transition: all .3s ease;">
+        <div class="service-card-image" style="aspect-ratio: 4/3; background: linear-gradient(135deg, #e8f7f5, var(--c-surface)); display: flex; align-items: center; justify_content: center; position: relative; overflow: hidden;">
+            <svg class="service-icon-large" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="width: 64px; height: 64px; color: #2dd4bf; opacity: 0.15; transition: all .3s ease;" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 20.25h13.5" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 20.25V5.5A1.75 1.75 0 018.5 3.75h7A1.75 1.75 0 0117.25 5.5v14.75" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3.75v16.5" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 12h.008v.008H9.75V12z" />
+            </svg>
+            <span class="service-category-tag" style="position: absolute; top: .75rem; left: .75rem; background: #2dd4bf; color: white; padding: .25rem .6rem; border-radius: 999px; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;">Automatisme</span>
+        </div>
+        <div class="service-card-content" style="padding: 1.25rem;">
+            <h3 style="font-family: 'DM Serif Display', Georgia, serif; font-size: 1.1rem; font-weight: 400; color: var(--c-ink); margin-bottom: .5rem;">Portes automatiques</h3>
+            <p style="color: var(--c-muted); line-height: 1.55; margin: 0 0 1rem; font-size: .9rem;">Installation de solutions d'ouverture automatique pour améliorer l'accessibilité, le confort et la sécurité de vos espaces.</p>
+            <a href="<?= base_url('catalogue/categorie/Portes') ?>" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .9rem; font-size: .825rem;">En savoir plus <i class="fas fa-arrow-right" aria-hidden="true" style="font-size: .75rem;"></i></a>
+        </div>
+    </article>
 
     <!-- 07 — DOMOTIQUE -->
+    <article class="service-card" style="position: relative; background: var(--c-card); border: 1px solid var(--c-border); border-radius: var(--radius); overflow: hidden; transition: all .3s ease;">
+        <div class="service-card-image" style="aspect-ratio: 4/3; background: linear-gradient(135deg, #fff3e0, var(--c-surface)); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+            <svg class="service-icon-large" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="width: 64px; height: 64px; color: #f6c23e; opacity: 0.15; transition: all .3s ease;" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 10.5L12 3l8.25 7.5" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 9.75v9.75a1.5 1.5 0 001.5 1.5h10.5a1.5 1.5 0 001.5-1.5V9.75" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 20.25v-6h6v6" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 9.75h4.5" />
+            </svg>
+            <span class="service-category-tag" style="position: absolute; top: .75rem; left: .75rem; background: #f6c23e; color: white; padding: .25rem .6rem; border-radius: 999px; font-size: .65rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em;">Connecté</span>
+        </div>
+        <div class="service-card-content" style="padding: 1.25rem;">
+            <h3 style="font-family: 'DM Serif Display', Georgia, serif; font-size: 1.1rem; font-weight: 400; color: var(--c-ink); margin-bottom: .5rem;">Solutions de domotique</h3>
+            <p style="color: var(--c-muted); line-height: 1.55; margin: 0 0 1rem; font-size: .9rem;">Des solutions connectées pour automatiser, contrôler et améliorer le confort, la sécurité et la gestion de vos espaces.</p>
+            <a href="<?= base_url('catalogue/categorie/Domotique') ?>" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: .4rem; padding: .45rem .9rem; font-size: .825rem;">En savoir plus <i class="fas fa-arrow-right" aria-hidden="true" style="font-size: .75rem;"></i></a>
+        </div>
+    </article>
+</div>
 
-    <div class="service-card">
-
-      <svg
-        class="service-icon"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.5"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M3.75 10.5L12 3l8.25 7.5"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M5.25 9.75v9.75a1.5 1.5 0 001.5 1.5h10.5a1.5 1.5 0 001.5-1.5V9.75"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M9 20.25v-6h6v6"
-        />
-
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M9.75 9.75h4.5"
-        />
-      </svg>
-
-      <h3>
-        Solutions de domotique
-      </h3>
-
-      <p>
-        Des solutions connectées pour automatiser, contrôler et améliorer
-        le confort, la sécurité et la gestion de vos espaces.
-      </p>
-
-    </div>
-
-
-  </div>
+<style>
+.service-card {
+    transition: all .3s ease;
+}
+.service-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px rgba(0,0,0,.1);
+    border-color: var(--c-accent);
+}
+.service-card:hover .service-icon-large {
+    opacity: 0.25;
+    transform: scale(1.05);
+}
+.service-card:hover .service-category-tag {
+    transform: scale(1.05);
+}
+.service-card-image {
+    position: relative;
+}
+.service-card-image::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,.05) 100%);
+    pointer-events: none;
+}
+@media (max-width: 768px) {
+    .services-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 
 </section>
 

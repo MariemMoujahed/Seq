@@ -35,13 +35,7 @@ abstract class BaseController extends Controller
      *
      * @var list<string>
      */
-    protected $helpers = ['form'];
-
-    /**
-     * Be sure to declare properties for any property fetch you initialized.
-     * The creation of dynamic property is deprecated in PHP 8.2.
-     */
-    // protected $session;
+    protected $helpers = ['form', 'url'];
 
     /**
      * Constructor.
@@ -52,11 +46,120 @@ abstract class BaseController extends Controller
      */
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
-        // Do Not Edit This Line
         parent::initController($request, $response, $logger);
+    }
 
-        // Preload any models, libraries, etc, here.
+    /**
+     * Check if user is logged in
+     */
+    protected function isLoggedIn(): bool
+    {
+        return session()->has('user');
+    }
 
-        // E.g.: $this->session = \Config\Services::session();
+    /**
+     * Get current logged in user's pseudo
+     */
+    protected function currentUser(): ?string
+    {
+        return $this->isLoggedIn() ? session()->get('user') : null;
+    }
+
+    /**
+     * Get current user's role
+     */
+    protected function currentUserRole(): ?string
+    {
+        if (! $this->isLoggedIn()) {
+            return null;
+        }
+        $model = model(\App\Models\Db_model::class);
+        $role = $model->get_role_by_pseudo($this->currentUser());
+        return $role['cpt_role'] ?? null;
+    }
+
+    /**
+     * Check if current user is admin
+     */
+    protected function isAdmin(): bool
+    {
+        return $this->currentUserRole() === 'A';
+    }
+
+    /**
+     * Check if current user is member/client
+     */
+    protected function isMember(): bool
+    {
+        return $this->currentUserRole() === 'M';
+    }
+
+    /**
+     * Require authentication - redirect to login if not logged in
+     */
+    protected function requireAuth(): ?\CodeIgniter\HTTP\RedirectResponse
+    {
+        if (! $this->isLoggedIn()) {
+            return redirect()->to('/compte/connecter')->with('error', 'Veuillez vous connecter pour accéder à cette page.');
+        }
+        return null;
+    }
+
+    /**
+     * Require admin role - redirect to dashboard if not admin
+     */
+    protected function requireAdmin(): ?\CodeIgniter\HTTP\RedirectResponse
+    {
+        $authRedirect = $this->requireAuth();
+        if ($authRedirect) {
+            return $authRedirect;
+        }
+        if (! $this->isAdmin()) {
+            return redirect()->to('/compte/accueil')->with('error', 'Accès réservé aux administrateurs.');
+        }
+        return null;
+    }
+
+    /**
+     * Require member role (or admin) - redirect if not logged in
+     */
+    protected function requireMember(): ?\CodeIgniter\HTTP\RedirectResponse
+    {
+        $authRedirect = $this->requireAuth();
+        if ($authRedirect) {
+            return $authRedirect;
+        }
+        return null;
+    }
+
+    /**
+     * Get appropriate menu view for current user
+     */
+    protected function getMenuView(): string
+    {
+        return $this->isAdmin() ? 'menu/menu_administrateur' : 'menu/menu_membre';
+    }
+
+    /**
+     * Render view with common layout (haut2 + menu + content + bas2)
+     */
+    protected function renderAuthView(string $contentView, array $data = []): string
+    {
+        $menu = $this->getMenuView();
+        return view('templates/haut2', $data)
+            . view($menu, $data)
+            . view($contentView, $data)
+            . view('templates/bas2');
+    }
+
+    /**
+     * Render public view with public layout (haut + menu_visiteur + content + bas)
+     */
+    protected function renderPublicView(string $contentView, array $data = []): string
+    {
+        return view('templates/haut', $data)
+            . view('menu/menu_visiteur', $data)
+            . view($contentView, $data)
+            . view('templates/bas');
     }
 }

@@ -20,68 +20,68 @@ class Devis extends BaseController
         return (float) env('devis.tarifKilometre', 1.5);
     }
 
-    public function __construct()
-    {
-        //...
-    }
-
-    // ---------------------------------------------------------
-    // LISTE DES DEVIS
-    // ---------------------------------------------------------
-
+    /**
+     * Liste des devis - member sees own, admin sees all
+     */
     public function lister_dev()
     {
-        $session = session();
-        if (! $session->has('user')) {
-            return redirect()->to('/connexion');
+        $redirect = $this->requireMember();
+        if ($redirect) {
+            return $redirect;
         }
 
-        $pseudo = $session->get('user');
+        $pseudo = $this->currentUser();
         $model  = model(Db_model::class);
-        $role   = $model->get_role_by_pseudo($pseudo);
+        $isAdmin = $this->isAdmin();
 
-        $data['titre']    = "Liste des Devis";
-        $data['clients']  = $model->get_clients();
-        $data['produits'] = $model->get_produits();
+        $data = [
+            'titre'    => 'Liste des Devis',
+            'clients'  => $model->get_clients(),
+            'produits' => $model->get_produits(),
+            'tarifKm'  => $this->tarifKilometre(),
+            'tauxTva'  => self::TAUX_TVA,
+        ];
 
-        // Tarifs utilisés par le calcul en direct du formulaire.
-        $data['tarifKm'] = $this->tarifKilometre();
-        $data['tauxTva'] = self::TAUX_TVA;
-
-        if ($role && $role['cpt_role'] === 'A') {
-            // Administrateur : voit tous les devis
+        if ($isAdmin) {
             $data['dev'] = $model->get_all_dev();
-            $vue_devis   = 'affichage_dev_admin';
-            $menu        = 'menu_administrateur';
-        } elseif ($role && $role['cpt_role'] === 'C') {
-            // Commercial : voit les devis qu'il a créés
-            $data['dev'] = $model->get_dev_by_user($pseudo);
-            $vue_devis   = 'affichage_dev';
-            $menu        = 'menu_membre';
-        } else {
-            // Technicien (ou autre) : voit ses propres devis / interventions
-            $data['dev'] = $model->get_dev_by_user($pseudo);
-            $vue_devis   = 'affichage_dev';
-            $menu        = 'menu_membre';
+            return $this->renderAuthView('affichage_dev_admin', $data);
         }
 
-        return view('templates/haut2', $data)
-            . view('menu/' . $menu)
-            . view($vue_devis, $data)
-            . view('templates/bas2');
+        // Member/Commercial: own devis
+        $data['dev'] = $model->get_dev_by_user($pseudo);
+        return $this->renderAuthView('affichage_dev', $data);
     }
 
-    // ---------------------------------------------------------
-    // CRÉATION D'UN DEVIS
-    // ---------------------------------------------------------
-
+    /**
+     * Créer un devis - member can create
+     */
     public function creer()
     {
-        $session = session();
-        if (! $session->has('user')) {
-            return redirect()->to('/connexion');
+        $redirect = $this->requireMember();
+        if ($redirect) {
+            return $redirect;
         }
-        $pseudo = $session->get('user');
+
+        if ($this->request->getMethod() === 'POST') {
+            return $this->processCreateDevis();
+        }
+
+        // GET: Show the devis creation form
+        $model = model(Db_model::class);
+        $data = [
+            'titre'    => 'Nouveau Devis',
+            'clients'  => $model->get_clients(),
+            'produits' => $model->get_produits(),
+            'tarifKm'  => $this->tarifKilometre(),
+            'tauxTva'  => self::TAUX_TVA,
+        ];
+
+        return $this->renderAuthView('devis/_formulaire', $data);
+    }
+
+    private function processCreateDevis(): \CodeIgniter\HTTP\RedirectResponse
+    {
+        $pseudo = $this->currentUser();
 
         // --- Client : existant ou nouveau ---
         $cli_id   = $this->request->getPost('cli_id');
@@ -94,7 +94,7 @@ class Devis extends BaseController
         // --- Devis ---
         $distance = (float) $this->request->getPost('dev_distance');
 
-        // --- Lignes de produits (tableaux issus du formulaire) ---
+        // --- Lignes de produits ---
         $prd_ids = (array) ($this->request->getPost('prd_id') ?? []);
         $qtes    = (array) ($this->request->getPost('det_quantite') ?? []);
 
@@ -104,12 +104,12 @@ class Devis extends BaseController
         $total_produits = 0.0;
         $sans_stock     = [];
 
-        // 1) Client : soit un id valide, soit un nom pour un nouveau client
+        // 1) Client
         $nouveauClient = false;
 
         if ($cli_id === null || $cli_id === '') {
             if ($cli_nom === '') {
-                $erreurs[] = 'Sélectionnez un client ou saisissez le nom d’un nouveau client.';
+                $erreurs[] = 'Sélectionnez un client ou saisissez le nom d\'un nouveau client.';
             } else {
                 $nouveauClient = true;
             }
@@ -125,7 +125,7 @@ class Devis extends BaseController
             $erreurs[] = 'Le nom du client ne peut pas dépasser 100 caractères.';
         }
         if ($cli_mail !== '' && ! filter_var($cli_mail, FILTER_VALIDATE_EMAIL)) {
-            $erreurs[] = 'L’adresse email du client est invalide.';
+            $erreurs[] = 'L\'adresse email du client est invalide.';
         }
 
         // 2) Distance
@@ -147,7 +147,7 @@ class Devis extends BaseController
 
             $produit = $db->table('t_produit_prd')->where('prd_id', (int) $prd_id)->get()->getRowArray();
             if (! $produit) {
-                $erreurs[] = 'Un des produits sélectionnés n’existe plus dans le catalogue.';
+                $erreurs[] = 'Un des produits sélectionnés n\'existe plus dans le catalogue.';
                 continue;
             }
 
@@ -172,7 +172,6 @@ class Devis extends BaseController
             $erreurs[] = 'Stock insuffisant pour : ' . implode(', ', $sans_stock) . '.';
         }
 
-        // Aucune ligne de base : inutile d'aller plus loin
         if ($erreurs !== []) {
             return redirect()->to('/devis/lister_dev')
                 ->with('error', implode(' ', $erreurs))
@@ -180,7 +179,6 @@ class Devis extends BaseController
         }
 
         // 4) Calcul des totaux
-        // La main d'œuvre est saisie par l'administrateur après création.
         $main_oeuvre = 0.0;
         $frais_km    = round($distance * $this->tarifKilometre(), 2);
         $total_ht    = round($total_produits + $frais_km + $main_oeuvre, 2);
@@ -191,7 +189,6 @@ class Devis extends BaseController
 
         // 5) Client
         if ($nouveauClient) {
-            // Évite de créer des doublons à chaque nouveau devis.
             $doublon = null;
             if ($cli_tel !== '') {
                 $doublon = $db->table('t_client_cli')->where('cli_telephone', $cli_tel)->get()->getRowArray();
@@ -236,14 +233,10 @@ class Devis extends BaseController
             $db->table('t_detail_det')->insert($ligne);
         }
 
-        // 8) On vérifie réellement que la transaction est passée : sans ce
-        //    test, un échec SQL renvoyait quand même vers la liste comme si
-        //    le devis avait été créé.
         if (! $db->transStatus()) {
             $db->transRollback();
-
             return redirect()->to('/devis/lister_dev')
-                ->with('error', 'Le devis n’a pas pu être enregistré. Réessayez.')
+                ->with('error', 'Le devis n\'a pas pu être enregistré. Réessayez.')
                 ->withInput();
         }
 
@@ -253,23 +246,14 @@ class Devis extends BaseController
             ->with('success', 'Devis #' . $dev_id . ' créé pour un total de ' . number_format($total_ttc, 2, '.', ' ') . ' TND.');
     }
 
-    // ---------------------------------------------------------
-    // VALIDATION
-    // ---------------------------------------------------------
-
+    /**
+     * Valider un devis - admin only
+     */
     public function valider($id)
     {
-        $session = session();
-        if (! $session->has('user')) {
-            return redirect()->to('/connexion');
-        }
-
-        // Sans ce contrôle, n'importe quel compte connecté (rôle M ou C)
-        // pouvait valider n'importe quel devis en devinant son id.
-        $role = model(Db_model::class)->get_role_by_pseudo($session->get('user'));
-        if (! $role || $role['cpt_role'] !== 'A') {
-            return redirect()->to('/devis/lister_dev')
-                ->with('error', 'Seul un administrateur peut valider un devis.');
+        $redirect = $this->requireAdmin();
+        if ($redirect) {
+            return $redirect;
         }
 
         $db = \Config\Database::connect();
@@ -281,22 +265,17 @@ class Devis extends BaseController
             ->with('success', 'Devis validé.');
     }
 
-    // ---------------------------------------------------------
-    // MODIFIER LA MAIN D'ŒUVRE (remplace l'ancien modifier_montant)
-    // ---------------------------------------------------------
-
+    /**
+     * Modifier main d'œuvre - admin only
+     */
     public function modifier_main_oeuvre($id)
     {
-        $session = session();
-        if (! $session->has('user')) {
-            return redirect()->to('/connexion');
+        $redirect = $this->requireAdmin();
+        if ($redirect) {
+            return $redirect;
         }
 
-        $pseudo = $session->get('user');
-        $model  = model(Db_model::class);
-        $role   = $model->get_role_by_pseudo($pseudo);
-
-        if (! $role || $role['cpt_role'] !== 'A') {
+        if ($this->request->getMethod() !== 'POST') {
             return redirect()->to('/devis/lister_dev');
         }
 
@@ -305,6 +284,7 @@ class Devis extends BaseController
             return redirect()->to('/devis/lister_dev')->with('error', 'Montant invalide.');
         }
 
+        $model = model(Db_model::class);
         $db = \Config\Database::connect();
 
         $devis = $db->table('t_devis_dev')->where('dev_id', (int) $id)->get()->getRowArray();
@@ -313,9 +293,6 @@ class Devis extends BaseController
         }
 
         $total_produits = $model->get_total_produits((int) $id);
-
-        // La main d'œuvre ne s'ajoute pas seule : les frais de déplacement
-        // liés à la distance doivent être conservés dans le total.
         $frais_km  = round((float) $devis['dev_distance'] * $this->tarifKilometre(), 2);
         $total_ht  = round($total_produits + $frais_km + $nouvelle_main_oeuvre, 2);
         $tva       = round($total_ht * self::TAUX_TVA, 2);
@@ -333,32 +310,23 @@ class Devis extends BaseController
         return redirect()->to('/devis/lister_dev')->with('success', 'Devis mis à jour.');
     }
 
-    // ---------------------------------------------------------
-    // SUPPRESSION
-    // ---------------------------------------------------------
-
+    /**
+     * Supprimer devis - admin only
+     */
     public function supprimer($id)
     {
-        $session = session();
-        if (! $session->has('user')) {
-            return redirect()->to('/connexion');
-        }
-
-        // Même règle que valider() : la suppression était ouverte à tous les
-        // comptes connectés.
-        $role = model(Db_model::class)->get_role_by_pseudo($session->get('user'));
-        if (! $role || $role['cpt_role'] !== 'A') {
-            return redirect()->to('/devis/lister_dev')
-                ->with('error', 'Seul un administrateur peut supprimer un devis.');
+        $redirect = $this->requireAdmin();
+        if ($redirect) {
+            return $redirect;
         }
 
         $db = \Config\Database::connect();
         $db->transStart();
 
-        // 1) Supprimer d'abord les lignes de détail (produits liés)
+        // 1) Supprimer d'abord les lignes de détail
         $db->table('t_detail_det')->where('dev_id', (int) $id)->delete();
 
-        // 2) Supprimer les interventions liées, s'il y en a
+        // 2) Supprimer les interventions liées
         $db->table('t_intervention_itv')->where('dev_id', (int) $id)->delete();
 
         // 3) Supprimer le devis
@@ -366,9 +334,8 @@ class Devis extends BaseController
 
         if (! $db->transStatus()) {
             $db->transRollback();
-
             return redirect()->to('/devis/lister_dev')
-                ->with('error', 'Le devis n’a pas pu être supprimé. Réessayez.');
+                ->with('error', 'Le devis n\'a pas pu être supprimé. Réessayez.');
         }
 
         $db->transCommit();

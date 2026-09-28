@@ -12,9 +12,15 @@
             </a>
         </li>
         <li>
-            <a class="site-nav-link" href="<?= base_url('index.php/devis/lister_dev') ?>">
+            <a class="site-nav-link" href="<?= base_url('index.php/client/catalogue') ?>">
+                <i class="fas fa-box" aria-hidden="true"></i>
+                Catalogue
+            </a>
+        </li>
+        <li>
+            <a class="site-nav-link" href="<?= base_url('index.php/client/mes-devis') ?>">
                 <i class="fas fa-file-invoice" aria-hidden="true"></i>
-                Lister les devis
+                Mes devis
             </a>
         </li>
         <li>

@@ -12,6 +12,7 @@
 
             <?= form_open('/compte/connecter') ?>
             <?= csrf_field() ?>
+            <input type="hidden" name="redirect" value="<?= esc($redirect ?? '/compte/accueil') ?>">
 
             <div class="auth-field">
                 <label for="pseudo">Pseudo</label>
