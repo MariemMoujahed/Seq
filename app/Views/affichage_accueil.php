@@ -1,28 +1,3 @@
-<header>
-
-  <nav class="nav-scroll">
-
-    <a href="#services" class="nav-item">
-      Solutions
-    </a>
-
-    <a href="#realisations" class="nav-item">
-      Réalisations
-    </a>
-
-    <a href="#accompagnement" class="nav-item">
-      Notre accompagnement
-    </a>
-
-    <a href="#contact" class="nav-item">
-      Contact
-    </a>
-
-  </nav>
-
-</header>
-
-
 <main>
 <!-- ═══ HERO ═════════════════════════════════════════════ -->
 
@@ -928,5 +903,71 @@
   </div>
 
 </section>
+
+  <!-- ═══ LOGIN CTA ═════════════════════════════════════════════ -->
+  
+  <section id="espace-client" class="login-cta-section">
+  
+    <div class="login-cta-card reveal">
+  
+      <div class="login-cta-visual">
+        <svg class="login-cta-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        <div class="login-cta-pulse"></div>
+      </div>
+  
+      <div class="login-cta-content">
+        <span class="login-cta-badge">
+          <i class="fas fa-shield-alt" aria-hidden="true"></i>
+          Espace Client Sécurisé
+        </span>
+  
+        <h2 class="login-cta-title">
+          Accédez à votre tableau de bord
+        </h2>
+  
+        <p class="login-cta-desc">
+          Gérez vos installations, suivez vos devis, consultez l'historique de vos interventions et configurez vos systèmes de sécurité en temps réel.
+        </p>
+  
+        <ul class="login-cta-features">
+          <li>
+            <i class="fas fa-check" aria-hidden="true"></i>
+            <span>Suivi de vos devis et commandes</span>
+          </li>
+          <li>
+            <i class="fas fa-check" aria-hidden="true"></i>
+            <span>Historique des interventions</span>
+          </li>
+          <li>
+            <i class="fas fa-check" aria-hidden="true"></i>
+            <span>Configuration de vos équipements</span>
+          </li>
+          <li>
+            <i class="fas fa-check" aria-hidden="true"></i>
+            <span>Support technique prioritaire</span>
+          </li>
+        </ul>
+  
+        <div class="login-cta-actions">
+          <a href="<?= base_url('index.php/compte/connecter') ?>" class="btn-login-primary">
+            <span>Se connecter</span>
+            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+          </a>
+          <a href="<?= base_url('index.php/compte/creer') ?>" class="btn-login-secondary">
+            Créer un compte
+          </a>
+        </div>
+  
+        <p class="login-cta-note">
+          <i class="fas fa-lock" aria-hidden="true"></i>
+          Connexion sécurisée • Données chiffrées • Accès 24/7
+        </p>
+      </div>
+  
+    </div>
+  
+  </section>
 
 </main>

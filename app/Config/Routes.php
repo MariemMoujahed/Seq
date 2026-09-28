@@ -23,6 +23,8 @@ $routes->get('compte/creer', [Compte::class, 'creer']);
 $routes->post('compte/creer', [Compte::class, 'creer']);
 $routes->get('compte/accueil', [Compte::class, 'accueil']);
 $routes->get('compte/afficher_profil', [Compte::class, 'afficher_profil']);
+$routes->get('compte/modifier_profil', [Compte::class, 'modifier_profil']);
+$routes->post('compte/modifier_profil', [Compte::class, 'modifier_profil']);
 $routes->get('compte/deconnecter', [Compte::class, 'deconnecter']);
 $routes->get('compte/connecter', [Compte::class, 'connecter']);
 $routes->post('compte/connecter', [Compte::class, 'connecter']);

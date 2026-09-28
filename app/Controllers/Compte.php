@@ -53,10 +53,63 @@ class Compte extends BaseController
             } else {
                 $menu = 'menu_membre';
             }
-            
+
+            // Dashboard data with error handling
+            try {
+                $membreResult = $model->get_membre();
+                $membre = $membreResult && isset($membreResult->total) ? (int)$membreResult->total : 0;
+            } catch (\Exception $e) {
+                $membre = 0;
+            }
+
+            // Get recent devis (last 5)
+            try {
+                $allDevis = $model->get_all_dev();
+                $recent_devis = array_slice($allDevis, 0, 5);
+
+                // Count pending devis
+                $devis_pending = 0;
+                foreach ($allDevis as $d) {
+                    $statut = strtolower(trim($d['dev_statut'] ?? ''));
+                    if ($statut === 'en attente' || $statut === 'pending' || $statut === 'attente') {
+                        $devis_pending++;
+                    }
+                }
+            } catch (\Exception $e) {
+                $allDevis = [];
+                $recent_devis = [];
+                $devis_pending = 0;
+            }
+
+            // Count produits
+            try {
+                $produits = $model->get_produits();
+                $produits_count = count($produits);
+
+                // Stock alerts (products with low stock - flexible column check)
+                $stock_alerts = 0;
+                foreach ($produits as $p) {
+                    $stock = $p['prd_stock'] ?? $p['prd_quantite'] ?? $p['stock'] ?? $p['quantity'] ?? null;
+                    if ($stock !== null && is_numeric($stock) && $stock < 5) {
+                        $stock_alerts++;
+                    }
+                }
+            } catch (\Exception $e) {
+                $produits_count = 0;
+                $stock_alerts = 0;
+            }
+
+            $data = [
+                'membre' => $membre,
+                'devis_pending' => $devis_pending,
+                'produits_count' => $produits_count,
+                'stock_alerts' => $stock_alerts,
+                'recent_devis' => $recent_devis,
+            ];
+
             return view('templates/haut2')
                 . view("menu/$menu")
-                . view('connexion/compte_accueil')
+                . view('connexion/compte_accueil', $data)
                 . view('templates/bas2');
         }
 
@@ -179,16 +232,7 @@ class Compte extends BaseController
 
                     $session->set('user', $username);
 
-                    // Supprimer les deux lignes get_id_by_pseudo (méthode inexistante)
-                    // $user = $model->get_id_by_pseudo($username);
-                    // $id = $user['cpt_pseudo'];
-
-                    $data = []; // ← initialiser $data avant de l'utiliser
-
-                    return view('templates/haut2')
-                        . view("menu/$menu")
-                        . view('connexion/compte_accueil', $data)
-                        . view('templates/bas2');
+                    return redirect()->to('/compte/accueil');
                 }
 
                 return view('templates/haut', ['titre' => 'Se connecter'])
@@ -240,6 +284,115 @@ class Compte extends BaseController
                     . view('connexion/compte_profil', $data)
                     . view('templates/bas2');
             }
+
+        public function modifier_profil()
+        {
+            $session = session();
+
+            if (! $session->has('user')) {
+                return redirect()->to('/connexion');
+            }
+
+            $pseudo = $session->get('user');
+            $model = model(Db_model::class);
+
+            $role = $model->get_role_by_pseudo($pseudo);
+            $menu = ($role && $role['cpt_role'] === 'A') ? 'menu_administrateur' : 'menu_membre';
+
+            // GET - afficher le formulaire
+            if ($this->request->getMethod() !== 'POST') {
+                $profil = $model->get_profil_by_pseudo($pseudo);
+                $data = [
+                    'profil' => $profil,
+                    'menu' => $menu,
+                ];
+                return view('templates/haut2')
+                    . view("menu/$menu")
+                    . view('connexion/compte_profil_edit', $data)
+                    . view('templates/bas2');
+            }
+
+            // POST - traiter la mise à jour
+            $validationRules = [
+                'nom'        => 'required|trim|max_length[60]',
+                'prenom'     => 'required|trim|max_length[45]',
+                'adresse'    => 'required|trim|max_length[100]',
+                'telephone'  => 'required|trim|max_length[20]',
+                'email'      => 'permit_empty|trim|valid_email|max_length[100]',
+                'entreprise' => 'permit_empty|trim|max_length[100]',
+            ];
+
+            if ($this->request->getVar('mdp_new')) {
+                $validationRules['mdp_current'] = 'required';
+                $validationRules['mdp_new'] = 'required|min_length[8]|max_length[255]';
+                $validationRules['mdp_confirm'] = 'required|matches[mdp_new]';
+            }
+
+            if (! $this->validate($validationRules)) {
+                $profil = $model->get_profil_by_pseudo($pseudo);
+                return view('templates/haut2')
+                    . view("menu/$menu")
+                    . view('connexion/compte_profil_edit', [
+                        'profil' => $profil,
+                        'menu' => $menu,
+                        'error' => 'Le formulaire contient des erreurs.',
+                    ])
+                    . view('templates/bas2');
+            }
+
+            $data = $this->validator->getValidated();
+
+            // Mapper les noms de champs formulaire vers les colonnes DB
+            $dbData = [];
+            $fieldMap = [
+                'nom' => 'cpt_nom',
+                'prenom' => 'cpt_prenom',
+                'email' => 'cpt_email',
+                'telephone' => 'cpt_telephone',
+                'adresse' => 'cpt_adresse',
+                'entreprise' => 'cpt_entreprise',
+            ];
+            foreach ($fieldMap as $formField => $dbField) {
+                if (isset($data[$formField])) {
+                    $dbData[$dbField] = $data[$formField];
+                }
+            }
+
+            // Vérifier le mot de passe actuel si changement demandé
+            if (!empty($data['mdp_new'])) {
+                $user = $model->get_user($pseudo);
+                $salt = "OnRajouteDuSelPourAllongerleMDP123!!45678__Test";
+                $currentHash = hash('sha256', $salt . $data['mdp_current']);
+                
+                if ($user->cpt_mdp !== $currentHash) {
+                    $profil = $model->get_profil_by_pseudo($pseudo);
+                    return view('templates/haut2')
+                        . view("menu/$menu")
+                        . view('connexion/compte_profil_edit', [
+                            'profil' => $profil,
+                            'menu' => $menu,
+                            'error' => 'Mot de passe actuel incorrect.',
+                        ])
+                        . view('templates/bas2');
+                }
+                $dbData['cpt_mdp'] = hash('sha256', $salt . $data['mdp_new']);
+            }
+
+            if (! $model->update_profil($pseudo, $dbData)) {
+                $profil = $model->get_profil_by_pseudo($pseudo);
+                return view('templates/haut2')
+                    . view("menu/$menu")
+                    . view('connexion/compte_profil_edit', [
+                        'profil' => $profil,
+                        'menu' => $menu,
+                        'error' => 'La mise à jour a échoué. Réessayez.',
+                    ])
+                    . view('templates/bas2');
+            }
+
+            return redirect()->to('/compte/afficher_profil')
+                ->with('success', 'Profil mis à jour avec succès.');
+        }
 
         public function toggle($pseudo)
         {

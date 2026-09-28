@@ -1,512 +1,743 @@
+<div class="page">
+  <header class="page-header">
+    <div class="header-content">
+      <div>
+        <h1 class="page-title">Gestion des comptes</h1>
+        <p class="page-subtitle">Administration des utilisateurs et profils</p>
+      </div>
+      <a href="<?= base_url('index.php/compte/creer') ?>" class="btn btn-accent">
+        <i class="fas fa-user-plus"></i>
+        Nouvel utilisateur
+      </a>
+    </div>
+  </header>
+
+  <!-- Stats Cards -->
+  <section class="stats-grid" aria-label="Statistiques">
+    <article class="stat-card" style="--accent: var(--c-accent); --accent-bg: var(--c-accent-light);">
+      <div class="stat-icon" aria-hidden="true"><i class="fas fa-users"></i></div>
+      <div class="stat-content">
+        <p class="stat-label">Total comptes</p>
+        <p class="stat-value"><?= esc($membre->total ?? 0) ?></p>
+        <p class="stat-trend"><i class="fas fa-user-plus"></i> +3 ce mois</p>
+      </div>
+    </article>
+    <article class="stat-card" style="--accent: #36b9cc; --accent-bg: rgba(54,185,204,.15);">
+      <div class="stat-icon" aria-hidden="true"><i class="fas fa-id-card"></i></div>
+      <div class="stat-content">
+        <p class="stat-label">Profils actifs</p>
+        <p class="stat-value"><?= esc($profil_num->total_profil ?? 0) ?></p>
+      </div>
+    </article>
+    <article class="stat-card" style="--accent: #f6c23e; --accent-bg: rgba(246,194,62,.15);">
+      <div class="stat-icon" aria-hidden="true"><i class="fas fa-user-shield"></i></div>
+      <div class="stat-content">
+        <p class="stat-label">Administrateurs</p>
+        <p class="stat-value">
+          <?php 
+            $adminCount = 0;
+            if (!empty($logins) && is_array($logins)) {
+              foreach ($logins as $u) if (($u['cpt_role'] ?? '') === 'A') $adminCount++;
+            }
+            echo $adminCount;
+          ?>
+        </p>
+      </div>
+    </article>
+    <article class="stat-card" style="--accent: #e74a3b; --accent-bg: rgba(231,74,59,.15);">
+      <div class="stat-icon" aria-hidden="true"><i class="fas fa-user-slash"></i></div>
+      <div class="stat-content">
+        <p class="stat-label">Désactivés</p>
+        <p class="stat-value">
+          <?php 
+            $inactiveCount = 0;
+            if (!empty($logins) && is_array($logins)) {
+              foreach ($logins as $u) if (($u['cpt_statut'] ?? '') !== 'A') $inactiveCount++;
+            }
+            echo $inactiveCount;
+          ?>
+        </p>
+      </div>
+    </article>
+  </section>
+
+  <!-- Filters & Search -->
+  <section class="card filters-card" aria-label="Filtres et recherche">
+    <form class="filters-form" method="get" action="<?= base_url('index.php/compte/lister') ?>">
+      <div class="filters-row">
+        <div class="search-group">
+          <label for="search" class="visually-hidden">Rechercher</label>
+          <div class="search-input-wrap">
+            <i class="fas fa-search" aria-hidden="true"></i>
+            <input type="search" id="search" name="search" placeholder="Rechercher pseudo, nom, email..." 
+                   value="<?= esc($_GET['search'] ?? '') ?>" autocomplete="off">
+            <?php if (!empty($_GET['search'])): ?>
+              <a href="<?= base_url('index.php/compte/lister') ?>" class="search-clear" aria-label="Effacer la recherche">
+                <i class="fas fa-times"></i>
+              </a>
+            <?php endif; ?>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-role" class="visually-hidden">Filtrer par rôle</label>
+          <select id="filter-role" name="role">
+            <option value="">Tous les rôles</option>
+            <option value="A" <?= ($_GET['role'] ?? '') === 'A' ? 'selected' : '' ?>>Administrateurs</option>
+            <option value="M" <?= ($_GET['role'] ?? '') === 'M' ? 'selected' : '' ?>>Membres</option>
+            <option value="I" <?= ($_GET['role'] ?? '') === 'I' ? 'selected' : '' ?>>Invités</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-status" class="visually-hidden">Filtrer par statut</label>
+          <select id="filter-status" name="status">
+            <option value="">Tous les statuts</option>
+            <option value="A" <?= ($_GET['status'] ?? '') === 'A' ? 'selected' : '' ?>>Activés</option>
+            <option value="D" <?= ($_GET['status'] ?? '') === 'D' ? 'selected' : '' ?>>Désactivés</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="sort" class="visually-hidden">Trier par</label>
+          <select id="sort" name="sort">
+            <option value="pseudo_asc" <?= ($_GET['sort'] ?? '') === 'pseudo_asc' ? 'selected' : '' ?>>Pseudo A-Z</option>
+            <option value="pseudo_desc" <?= ($_GET['sort'] ?? '') === 'pseudo_desc' ? 'selected' : '' ?>>Pseudo Z-A</option>
+            <option value="nom_asc" <?= ($_GET['sort'] ?? '') === 'nom_asc' ? 'selected' : '' ?>>Nom A-Z</option>
+            <option value="date_desc" <?= ($_GET['sort'] ?? '') === 'date_desc' ? 'selected' : '' ?>>Plus récents</option>
+            <option value="date_asc" <?= ($_GET['sort'] ?? '') === 'date_asc' ? 'selected' : '' ?>>Plus anciens</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <!-- Users Table -->
+  <section class="card table-card" aria-labelledby="table-heading">
+    <div class="table-header">
+      <h2 id="table-heading" class="section-title"><?= esc($titre ?? 'Liste de tous les profils') ?></h2>
+      <div class="table-meta">
+        <span class="results-count">
+          <?php 
+            $total = !empty($logins) && is_array($logins) ? count($logins) : 0;
+            echo $total . ' utilisateur' . ($total > 1 ? 's' : '');
+          ?>
+        </span>
+      </div>
+    </div>
+
+    <?php if (!empty($logins) && is_array($logins)): ?>
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col" data-sort="pseudo">
+                  <a href="<?= (function($field) { $params = $_GET; $currentSort = $params['sort'] ?? ''; $currentDir = 'asc'; if (str_ends_with($currentSort, '_desc')) { $currentDir = 'desc'; } $baseField = str_replace(['_asc', '_desc'], '', $currentSort); if ($baseField === $field) { $params['sort'] = $field . '_' . ($currentDir === 'asc' ? 'desc' : 'asc'); } else { $params['sort'] = $field . '_asc'; } return base_url('index.php/compte/lister') . '?' . http_build_query($params); })('pseudo') ?>" class="sortable">
+                    Utilisateur <i class="fas fa-sort"></i>
+                  </a>
+                </th>
+                <th scope="col" data-sort="nom">
+                  <a href="<?= (function($field) { $params = $_GET; $currentSort = $params['sort'] ?? ''; $currentDir = 'asc'; if (str_ends_with($currentSort, '_desc')) { $currentDir = 'desc'; } $baseField = str_replace(['_asc', '_desc'], '', $currentSort); if ($baseField === $field) { $params['sort'] = $field . '_' . ($currentDir === 'asc' ? 'desc' : 'asc'); } else { $params['sort'] = $field . '_asc'; } return base_url('index.php/compte/lister') . '?' . http_build_query($params); })('nom') ?>" class="sortable">
+                    Nom <i class="fas fa-sort"></i>
+                  </a>
+                </th>
+                <th scope="col">Prénom</th>
+                <th scope="col">Téléphone</th>
+                <th scope="col">Email</th>
+                <th scope="col" data-sort="statut">
+                  <a href="<?= (function($field) { $params = $_GET; $currentSort = $params['sort'] ?? ''; $currentDir = 'asc'; if (str_ends_with($currentSort, '_desc')) { $currentDir = 'desc'; } $baseField = str_replace(['_asc', '_desc'], '', $currentSort); if ($baseField === $field) { $params['sort'] = $field . '_' . ($currentDir === 'asc' ? 'desc' : 'asc'); } else { $params['sort'] = $field . '_asc'; } return base_url('index.php/compte/lister') . '?' . http_build_query($params); })('statut') ?>" class="sortable">
+                    Statut <i class="fas fa-sort"></i>
+                  </a>
+                </th>
+                <th scope="col" data-sort="role">
+                  <a href="<?= (function($field) { $params = $_GET; $currentSort = $params['sort'] ?? ''; $currentDir = 'asc'; if (str_ends_with($currentSort, '_desc')) { $currentDir = 'desc'; } $baseField = str_replace(['_asc', '_desc'], '', $currentSort); if ($baseField === $field) { $params['sort'] = $field . '_' . ($currentDir === 'asc' ? 'desc' : 'asc'); } else { $params['sort'] = $field . '_asc'; } return base_url('index.php/compte/lister') . '?' . http_build_query($params); })('role') ?>" class="sortable">
+                    Rôle <i class="fas fa-sort"></i>
+                  </a>
+                </th>
+                <th scope="col" style="width: 140px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($logins as $index => $user): ?>
+                <tr data-pseudo="<?= esc($user['cpt_pseudo']) ?>" style="animation-delay: <?= min($index * 0.03, 0.3) ?>s;">
+                  <td>
+                    <div class="user-cell">
+                      <div class="user-avatar" aria-hidden="true">
+                        <i class="fas fa-<?= $user['cpt_role'] === 'A' ? 'user-shield' : 'user' ?>"></i>
+                      </div>
+                      <div class="user-info">
+                        <strong class="user-pseudo"><?= esc($user['cpt_pseudo']) ?></strong>
+                        <span class="user-id">ID: <?= esc($user['cpt_pseudo']) ?></span>
+                      </div>
+                    </div>
+                  </td>
+                  <td><?= esc($user['cpt_nom']) ?></td>
+                  <td><?= esc($user['cpt_prenom']) ?></td>
+                  <td>
+                    <a href="tel:<?= esc($user['cpt_telephone']) ?>" class="contact-link">
+                      <i class="fas fa-phone" aria-hidden="true"></i>
+                      <?= esc($user['cpt_telephone']) ?>
+                    </a>
+                  </td>
+                  <td>
+                    <a href="mailto:<?= esc($user['cpt_email']) ?>" class="contact-link">
+                      <i class="fas fa-envelope" aria-hidden="true"></i>
+                      <?= esc($user['cpt_email']) ?>
+                    </a>
+                  </td>
+                  <td>
+                    <span class="badge badge-<?= $user['cpt_statut'] === 'A' ? 'valid' : 'pending' ?> status-badge">
+                      <i class="fas fa-<?= $user['cpt_statut'] === 'A' ? 'check-circle' : 'times-circle' ?>" aria-hidden="true"></i>
+                      <?= $user['cpt_statut'] === 'A' ? 'Activé' : 'Désactivé' ?>
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge badge-<?= $user['cpt_role'] === 'A' ? 'valid' : 'pending' ?> role-badge">
+                      <i class="fas fa-<?= $user['cpt_role'] === 'A' ? 'user-shield' : ($user['cpt_role'] === 'M' ? 'user' : 'user-tag') ?>" aria-hidden="true"></i>
+                      <?= $user['cpt_role'] === 'A' ? 'Administrateur' : ($user['cpt_role'] === 'M' ? 'Membre' : 'Invité') ?>
+                    </span>
+                  </td>
+                  <td>
+                    <div class="actions-cell">
+                      <a href="<?= base_url('index.php/compte/toggle/' . $user['cpt_pseudo']) ?>"
+                         class="btn btn-icon btn-<?= $user['cpt_statut'] === 'A' ? 'ghost' : 'accent' ?>"
+                         title="<?= $user['cpt_statut'] === 'A' ? 'Désactiver' : 'Activer' ?>"
+                         data-tooltip="<?= $user['cpt_statut'] === 'A' ? 'Désactiver' : 'Activer' ?>">
+                        <i class="fas fa-<?= $user['cpt_statut'] === 'A' ? 'user-slash' : 'user-check' ?>"></i>
+                      </a>
+                      <a href="<?= base_url('index.php/compte/afficher_profil') ?>?user=<?= urlencode($user['cpt_pseudo']) ?>"
+                         class="btn btn-icon btn-ghost"
+                         title="Voir le profil"
+                         data-tooltip="Voir le profil">
+                        <i class="fas fa-eye"></i>
+                      </a>
+                      <a href="<?= base_url('index.php/compte/delete/' . $user['cpt_pseudo']) ?>"
+                         class="btn btn-icon btn-danger"
+                         title="Supprimer"
+                         data-tooltip="Supprimer"
+                         onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce compte ? Cette action est irréversible.');">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pagination placeholder -->
+      <?php if ($total > 10): ?>
+        <nav class="pagination" aria-label="Pagination">
+          <a href="#" class="btn btn-ghost btn-sm" aria-label="Page précédente"><i class="fas fa-chevron-left"></i></a>
+          <span class="page-numbers">
+            <a href="#" class="active" aria-current="page">1</a>
+            <a href="#">2</a>
+            <a href="#">3</a>
+            <span class="ellipsis">…</a>
+            <a href="#">5</a>
+          </span>
+          <a href="#" class="btn btn-ghost btn-sm" aria-label="Page suivante"><i class="fas fa-chevron-right"></i></a>
+        </nav>
+      <?php endif; ?>
+
+    <?php else: ?>
+      <div class="empty-state">
+        <div class="empty-icon" aria-hidden="true">
+          <i class="fas fa-users"></i>
+        </div>
+        <h3>Aucun utilisateur trouvé</h3>
+        <p><?= !empty($_GET['search']) || !empty($_GET['role']) || !empty($_GET['status']) 
+          ? 'Aucun résultat ne correspond à vos critères de recherche.' 
+          : 'Aucun compte pour le moment. Commencez par créer le premier utilisateur.' ?></p>
+        <a href="<?= base_url('index.php/compte/creer') ?>" class="btn btn-accent" style="margin-top: 1rem;">
+          <i class="fas fa-user-plus"></i>
+          Créer un utilisateur
+        </a>
+      </div>
+    <?php endif; ?>
+  </section>
+</div>
+
 <style>
-    /* Reset et styles de base */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* Enhanced user management page styles */
+
+/* Page header with action */
+.header-content {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: var(--gap);
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    padding: 40px 20px;
+.header-content .page-title {
+  margin-bottom: .25rem;
 }
 
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-    animation: fadeInUp 0.6s ease-out;
+/* Stats grid enhancements */
+.stats-grid {
+  margin-bottom: var(--gap);
 }
 
-/* En-tête */
-.header {
-    background: white;
-    border-radius: 20px;
-    padding: 30px;
-    margin-bottom: 30px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    transform: translateY(0);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+.stat-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--c-accent);
+  margin-top: .35rem;
 }
 
-.header:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+.stat-trend i {
+  font-size: .7rem;
 }
 
-.header-title h1 {
-    color: #333;
-    font-size: 2em;
-    margin-bottom: 10px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+/* Filters card */
+.filters-card {
+  padding: 1.25rem;
+  margin-bottom: var(--gap);
+  background: var(--c-surface);
+  border-color: var(--c-border);
 }
 
-.header-title p {
-    color: #666;
-    font-size: 1.1em;
+.filters-form {
+  margin: 0;
 }
 
-/* Cartes statistiques */
-.stats-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+.filters-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 1rem;
+  align-items: end;
 }
 
-.stat-card {
-    background: white;
-    border-radius: 15px;
-    padding: 25px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    animation: slideInLeft 0.5s ease-out;
+.search-group {
+  min-width: 280px;
 }
 
-.stat-card:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.stat-card i {
-    font-size: 3em;
-    color: #667eea;
-    transition: transform 0.3s ease;
+.search-input-wrap i {
+  position: absolute;
+  left: 1rem;
+  color: var(--c-muted);
+  font-size: .9rem;
 }
 
-.stat-card:hover i {
-    transform: scale(1.1) rotate(5deg);
+.search-input-wrap input {
+  width: 100%;
+  padding: .6rem 1rem .6rem 2.75rem;
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--c-card);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  color: var(--c-ink);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
 }
 
-.stat-card h2 {
-    font-size: 2em;
-    color: #333;
-    margin-bottom: 5px;
+.search-input-wrap input:focus {
+  border-color: var(--c-accent-mid);
+  box-shadow: 0 0 0 3px var(--c-accent-light);
 }
 
-.stat-card p {
-    color: #666;
-    font-size: 0.9em;
+.search-clear {
+  position: absolute;
+  right: .75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--c-muted);
+  background: var(--c-surface);
+  text-decoration: none;
+  transition: all .15s;
 }
 
-/* Conteneur du tableau */
-.table-container {
-    background: white;
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    overflow-x: auto;
-    animation: fadeInUp 0.6s ease-out 0.2s backwards;
+.search-clear:hover {
+  color: var(--c-danger);
+  background: var(--c-danger-bg);
 }
 
-.table-title {
-    color: #333;
-    margin-bottom: 20px;
-    font-size: 1.5em;
-    border-left: 4px solid #667eea;
-    padding-left: 15px;
+.filter-group select {
+  min-width: 160px;
+  padding: .6rem 2.5rem .6rem .75rem;
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--c-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23888780' d='M1 1l5 5 5-5'/%3E%3C/svg%3E") no-repeat right .75rem center;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  color: var(--c-ink);
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
 }
 
-/* Tableau stylisé */
-.styled-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 12px;
+.filter-group select:focus {
+  border-color: var(--c-accent-mid);
+  box-shadow: 0 0 0 3px var(--c-accent-light);
 }
 
-.styled-table thead tr {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 10px;
+.filter-group select:hover {
+  border-color: var(--c-accent-mid);
 }
 
-.styled-table th {
-    padding: 15px 20px;
-    text-align: left;
-    color: white;
-    font-weight: 600;
-    font-size: 0.9em;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+/* Table card */
+.table-card {
+  overflow: hidden;
 }
 
-.styled-table th:first-child {
-    border-radius: 10px 0 0 10px;
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--c-border);
+  flex-wrap: wrap;
+  gap: .75rem;
 }
 
-.styled-table th:last-child {
-    border-radius: 0 10px 10px 0;
+.results-count {
+  font-size: .85rem;
+  color: var(--c-muted);
+  font-weight: 500;
 }
 
-.styled-table tbody tr {
-    background: #f8f9fa;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    animation: slideInRight 0.4s ease-out;
-    animation-fill-mode: backwards;
+/* Table enhancements */
+.table-wrap table {
+  min-width: 900px;
 }
 
-.styled-table tbody tr:hover {
-    background: #e9ecef;
-    transform: translateX(5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+.table-wrap th {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
 }
 
-.styled-table td {
-    padding: 15px 20px;
-    color: #555;
-    font-size: 0.9em;
-    border-top: 1px solid #e0e0e0;
+.table-wrap th.sortable a {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  color: var(--c-muted);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color .15s;
 }
 
-/* Badges de statut */
-.status-badge {
-    display: inline-block;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    font-weight: 600;
-    transition: all 0.3s ease;
+.table-wrap th.sortable a:hover,
+.table-wrap th.sortable a[aria-sort] {
+  color: var(--c-accent);
 }
 
-.status-badge.active {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-    color: white;
+.table-wrap th i.fa-sort {
+  opacity: .4;
+  font-size: .7rem;
 }
 
-.status-badge.inactive {
-    background: linear-gradient(135deg, #f44336 0%, #da190b 100%);
-    color: white;
+.table-wrap th[aria-sort="asc"] i.fa-sort-up,
+.table-wrap th[aria-sort="desc"] i.fa-sort-down {
+  opacity: 1;
+  color: var(--c-accent);
 }
 
-.status-badge:hover {
-    transform: scale(1.05);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+.table-wrap th[aria-sort="asc"] i.fa-sort-down,
+.table-wrap th[aria-sort="desc"] i.fa-sort-up {
+  display: none;
 }
 
-/* Badges de rôle */
+/* User cell */
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  white-space: nowrap;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--c-accent-light);
+  color: var(--c-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .9rem;
+  flex-shrink: 0;
+}
+
+.user-pseudo {
+  display: block;
+  font-size: .9rem;
+  color: var(--c-ink);
+}
+
+.user-id {
+  display: block;
+  font-size: .7rem;
+  color: var(--c-muted);
+  font-family: monospace;
+}
+
+/* Contact links */
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  color: var(--c-ink);
+  text-decoration: none;
+  font-size: .875rem;
+  transition: color .15s;
+}
+
+.contact-link:hover {
+  color: var(--c-accent);
+  text-decoration: underline;
+}
+
+.contact-link i {
+  color: var(--c-muted);
+  font-size: .75rem;
+}
+
+.contact-link:hover i {
+  color: var(--c-accent);
+}
+
+/* Badges with icons */
+.status-badge,
 .role-badge {
-    display: inline-block;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.85em;
-    font-weight: 600;
-    transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
 }
 
-.role-badge.admin {
-    background: linear-gradient(135deg, #FF6B6B 0%, #c92a2a 100%);
-    color: white;
+.status-badge i,
+.role-badge i {
+  font-size: .65rem;
 }
 
-.role-badge.member {
-    background: linear-gradient(135deg, #4ECDC4 0%, #44a08d 100%);
-    color: white;
+/* Actions cell */
+.actions-cell {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  justify-content: flex-start;
 }
 
-.role-badge.invite {
-    background: linear-gradient(135deg, #FFE66D 0%, #f7b731 100%);
-    color: #333;
+.actions-cell .btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all .15s;
 }
 
-.role-badge:hover {
-    transform: scale(1.05);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+.actions-cell .btn-icon:hover {
+  transform: scale(1.1);
 }
 
-/* État vide */
+/* Tooltip */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: .4rem .6rem;
+  font-size: .7rem;
+  font-weight: 500;
+  color: var(--c-card);
+  background: var(--c-ink);
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .15s, transform .15s;
+  z-index: 100;
+}
+
+[data-tooltip]::before {
+  content: "";
+  position: absolute;
+  bottom: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--c-ink);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .15s;
+  z-index: 100;
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+[data-tooltip]:hover::after {
+  transform: translateX(-50%) translateY(-4px);
+}
+
+/* Empty state */
 .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    animation: fadeIn 0.6s ease-out;
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+  background: var(--c-accent-light);
+  color: var(--c-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
 }
 
 .empty-state h3 {
-    color: #666;
-    margin-bottom: 10px;
-    font-size: 1.5em;
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--c-ink);
+  margin: 0 0 .5rem;
 }
 
 .empty-state p {
-    color: #999;
-    font-size: 1em;
+  color: var(--c-muted);
+  margin: 0 0 1.5rem;
+  font-size: .95rem;
 }
 
-/* Animations */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: 1.5rem 0 0;
+  margin-top: 1rem;
+  border-top: 1px solid var(--c-border);
+  flex-wrap: wrap;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+.page-numbers {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
 }
 
-@keyframes slideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+.page-numbers a,
+.page-numbers span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 .5rem;
+  border-radius: var(--radius-sm);
+  font-size: .85rem;
+  font-weight: 500;
+  color: var(--c-ink);
+  text-decoration: none;
+  transition: all .15s;
 }
 
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+.page-numbers a:hover {
+  background: var(--c-accent-light);
+  color: var(--c-accent);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    body {
-        padding: 20px 10px;
-    }
-    
-    .header {
-        padding: 20px;
-    }
-    
-    .header-title h1 {
-        font-size: 1.5em;
-    }
-    
-    .stats-container {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .stat-card {
-        padding: 20px;
-    }
-    
-    .table-container {
-        padding: 20px;
-    }
-    
-    .styled-table thead {
-        display: none;
-    }
-    
-    .styled-table tbody tr {
-        display: block;
-        margin-bottom: 20px;
-        border-radius: 10px;
-    }
-    
-    .styled-table td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        text-align: right;
-        padding: 12px 15px;
-        border: none;
-        border-bottom: 1px solid #e0e0e0;
-    }
-    
-    .styled-table td:last-child {
-        border-bottom: none;
-    }
-    
-    .styled-table td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        text-align: left;
-        color: #667eea;
-    }
+.page-numbers a.active {
+  background: var(--c-accent);
+  color: #fff;
 }
 
-/* Effet de chargement progressif pour les lignes du tableau */
-.styled-table tbody tr:nth-child(1) { animation-delay: 0.1s; }
-.styled-table tbody tr:nth-child(2) { animation-delay: 0.2s; }
-.styled-table tbody tr:nth-child(3) { animation-delay: 0.3s; }
-.styled-table tbody tr:nth-child(4) { animation-delay: 0.4s; }
-.styled-table tbody tr:nth-child(5) { animation-delay: 0.5s; }
-.styled-table tbody tr:nth-child(6) { animation-delay: 0.6s; }
-.styled-table tbody tr:nth-child(7) { animation-delay: 0.7s; }
-.styled-table tbody tr:nth-child(8) { animation-delay: 0.8s; }
-.styled-table tbody tr:nth-child(9) { animation-delay: 0.9s; }
-.styled-table tbody tr:nth-child(10) { animation-delay: 1s; }
-
-/* Scrollbar personnalisée */
-::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+.page-numbers .ellipsis {
+  color: var(--c-muted);
+  pointer-events: none;
 }
 
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
+/* Responsive */
+@media (max-width: 900px) {
+  .filters-row {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+  
+  .search-group {
+    min-width: 0;
+  }
+  
+  .filter-group select {
+    width: 100%;
+    min-width: 0;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .header-content .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #5a67d8 0%, #6b46a0 100%);
-}
-/* Version minimaliste */
-.btn-action {
-    padding: 6px 12px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-size: 13px;
-    transition: opacity 0.2s;
-}
-
-.btn-enable {
-    background: #28a745;
-    color: white;
-}
-
-.btn-disable {
-    background: #ffc107;
-    color: #333;
-}
-
-.btn-delete {
-    background: #dc3545;
-    color: white;
-}
-
-.btn-action:hover {
-    opacity: 0.8;
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .table-wrap th:nth-child(4),
+  .table-wrap th:nth-child(5),
+  .table-wrap td:nth-child(4),
+  .table-wrap td:nth-child(5) {
+    display: none;
+  }
+  
+  .user-id {
+    display: none;
+  }
+  
+  .pagination {
+    gap: .25rem;
+  }
+  
+  .page-numbers a,
+  .page-numbers span {
+    min-width: 32px;
+    height: 32px;
+    font-size: .8rem;
+  }
 }
 </style>
-    </style>
-<body>
-
-<div class="container">
-
-    <!-- En-tête -->
-    <div class="header">
-        <div class="header-title">
-            <h1>Gestion des comptes utilisateurs</h1>
-            <p>Administration complète des profils et invitations</p>
-        </div>
-    </div>
-
-    <!-- Cartes -->
-    <div class="stats-container">
-        <div class="stat-card">
-            <i class="fas fa-users"></i>
-            <div>
-                <h2><?= $membre->total ?></h2>
-                <p>Comptes au total</p>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <i class="fas fa-id-card"></i>
-            <div>
-                <h2><?= $profil_num->total_profil ?></h2>
-                <p>Profils actifs</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- TABLE -->
-    <div class="table-container">
-
-    <?php if (!empty($logins) && is_array($logins)) : ?>
-
-        <h2 class="table-title"><?= $titre ?></h2>
-
-        <table class="styled-table">
-            <thead>
-                <tr>
-                    <th>Pseudo</th>
-                    <th>Nom</th>
-                    <th>Prénom</th>
-                    <th>Numéro</th>
-                    <th>Adresse</th>
-                    <th>Email</th>
-                    <th>Statut</th>
-                    <th>Rôle</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                <?php foreach ($logins as $pseudos) : ?>
-                    <tr>
-                        <td><?= htmlspecialchars($pseudos["cpt_pseudo"]) ?></td>
-                        <td><?= htmlspecialchars($pseudos["cpt_nom"]) ?></td>
-                        <td><?= htmlspecialchars($pseudos["cpt_prenom"]) ?></td>
-                        <td><?= htmlspecialchars($pseudos["cpt_telephone"]) ?></td>
-                        <td><?= htmlspecialchars($pseudos["cpt_adresse"]) ?> </td>
-                        <td><?= htmlspecialchars($pseudos["cpt_email"]) ?></td>
-
-                        <td>
-                            <span class="status-badge <?= $pseudos["cpt_statut"] == 'A' ? 'active' : 'inactive' ?>">
-                                <?= $pseudos["cpt_statut"] == 'A' ? 'Activé' : 'Désactivé' ?>
-                            </span>
-                        </td>
-
-                        <td>
-                            <span class="role-badge 
-                                <?= $pseudos["cpt_role"] == 'A' ? 'admin' : ($pseudos["cpt_role"] == 'M' ? 'member' : 'invite') ?>">
-                                
-                                <?= $pseudos["cpt_role"] == 'A' ? 'Admin' : ($pseudos["cpt_role"] == 'M' ? 'Membre' : 'Invité') ?>
-                            </span>
-                        </td>
-                        <td>
-                            <!-- Activer / Désactiver -->
-                            <a href="<?= base_url('compte/toggle/'.$pseudos["cpt_pseudo"]) ?>" 
-                            class="btn-action <?= $pseudos["cpt_statut"] == 'A' ? 'btn-disable' : 'btn-enable' ?>">
-                            
-                                <?= $pseudos["cpt_statut"] == 'A' ? 'Désactiver' : 'Activer' ?>
-                            </a>
-
-                            <!-- Supprimer -->
-                            <a href="<?= base_url('compte/delete/'.$pseudos["cpt_pseudo"]) ?>" 
-                            class="btn-action btn-delete"
-                            onclick="return confirm('Tu es sûr de vouloir supprimer ce compte ?');">
-                            
-                                Supprimer
-                            </a>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-
-    <?php else : ?>
-
-        <div class="empty-state">
-            <h3>Aucun compte pour le moment</h3>
-            <p>Les comptes utilisateurs apparaîtront ici une fois créés.</p>
-        </div>
-
-    <?php endif; ?>
-
-    </div>
-
-</div>
-</body>

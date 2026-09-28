@@ -235,6 +235,13 @@ class Db_model extends Model
             ->delete();
     }
 
+    public function update_profil(string $pseudo, array $data): bool
+    {
+        return (bool) $this->db->table('t_compte_cpt')
+            ->where('cpt_pseudo', $pseudo)
+            ->update($data);
+    }
+
     public function get_role_by_pseudo(string $pseudo): ?array
     {
         return $this->db->table('t_compte_cpt')
